@@ -19,7 +19,9 @@ router.post('/room', async (req: Request, res: Response) => {
     const newRoom: RoomModel = {
         ownerId: USERID,
         title: body.title,
-        description: body.description
+        description: body.description,
+        users: [],
+        messages: []
     };
 
     try {
@@ -35,6 +37,25 @@ router.get('/rooms', async (req: Request, res: Response) => {
     try {
         const allRooms = await roomService.getAllRooms();
         res.json(allRooms);
+    } catch (err: any) {
+        res.status(500).send(err.message);
+    }
+})
+
+// update the room. PUT /api/room
+router.put('/room', async (req: Request, res: Response) => {
+    const { body } = req;
+    const room: RoomModel = {
+        ownerId: USERID,
+        title: body.title,
+        description: body.description,
+        users: [],
+        messages: []
+    };
+
+    try {
+        const resp = await roomService.updateRoom(room);
+        res.json(resp);
     } catch (err: any) {
         res.status(500).send(err.message);
     }
