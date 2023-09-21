@@ -1,5 +1,6 @@
 export type RoomModel = {
-    id: string;
+    id?: string;
+    ownerId: string;
     title: string;
     description: string;
 }

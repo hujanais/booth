@@ -1,5 +1,6 @@
 import * as dotenv from "dotenv";
 import cors from "cors";
+import {errorHandler} from './middlewares/middlewares';
 dotenv.config();
 
 import express from "express";
@@ -8,7 +9,7 @@ import roomRouter from "./routes/rooms-routes";
 const app = express();
 
 app.use(cors());
-
+app.use(errorHandler);
 const port = +(process.env.PORT || "3000");
 
 app.use(express.json());
