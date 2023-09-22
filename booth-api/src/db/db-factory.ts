@@ -1,8 +1,10 @@
 import { RoomModel } from "../models/room-model";
 
-export class DBFactory {
+class DBFactory {
     private _rooms: RoomModel[] = [];
     public get rooms(): RoomModel[] {
         return this._rooms;
     }
 }
+
+export default new DBFactory();

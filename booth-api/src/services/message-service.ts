@@ -1,13 +1,11 @@
 import { MessageModel } from "../models/message-model";
 import { v4 as uuidv4 } from 'uuid';
-import { DBFactory } from "../db/db-factory";
+import _dbFactory from "../db/db-factory";
 
 export class MessageService {
 
-    private _dbFactory = new DBFactory();
-
     public async postMessage(message: MessageModel) : Promise<MessageModel> {
-        const room = this._dbFactory.rooms.find(r => r.id === message.roomId);
+        const room = _dbFactory.rooms.find(r => r.id === message.roomId);
         if (!room) throw new Error('Cannot find the room to post-message');
         if (!room.users.find(uId => uId === message.ownerId)) throw new Error('User is not part of this room');
 
@@ -17,7 +15,7 @@ export class MessageService {
     }
 
     public async updateMessage(message: MessageModel) : Promise<MessageModel>{
-        const room = this._dbFactory.rooms.find(r => r.id === message.roomId) ;
+        const room = _dbFactory.rooms.find(r => r.id === message.roomId) ;
         if (!room) throw new Error('Cannot find the room to update-message');
         if (!room.users.find(uId => uId === message.ownerId)) throw new Error('User is not part of this room');
 
@@ -31,7 +29,7 @@ export class MessageService {
     }
 
     public async deleteMessage(message: MessageModel) : Promise<MessageModel> {
-        const room = this._dbFactory.rooms.find(r => r.id === message.roomId);
+        const room = _dbFactory.rooms.find(r => r.id === message.roomId);
         if (!room) throw new Error('Cannot find the room to delete-message');
         
         const idx = room.messages.findIndex(m => m.id === message.id);

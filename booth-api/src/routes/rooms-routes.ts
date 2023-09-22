@@ -13,6 +13,17 @@ const roomService = new RoomService();
 
 const USERID = uuidv4();
 
+// Join a room.  POST /api/room/join
+router.post('/room/join', async (req: Request, res: Response) => {
+    const roomId = req.body.roomId;
+    try {
+        const resp = await roomService.joinRoom(USERID, roomId);
+        res.json(resp);
+    } catch (err: any) {
+        res.status(500).send(err.message);
+    }
+});
+
 // Create a new room. POST /api/room
 router.post('/room', async (req: Request, res: Response) => {
     const { body } = req;
