@@ -27,6 +27,9 @@ router.post('/room/join', async (req: Request, res: Response) => {
 // Create a new room. POST /api/room
 router.post('/room', async (req: Request, res: Response) => {
     const { body } = req;
+    const { userId } = res.locals.userId;
+    console.log(userId);
+
     const newRoom: RoomModel = {
         ownerId: USERID,
         title: body.title,
