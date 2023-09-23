@@ -1,4 +1,4 @@
-import { CreateRoomModelRequest, JoinRoomModelRequest, RoomModel, UpdateRoomModelRequest} from "../models/room-model";
+import { CreateRoomRequest, JoinRoomRequest, RoomModel, UpdateRoomRequest} from "../models/room-model";
 import { v4 as uuidv4 } from 'uuid';
 import _dbFactory from "../db/db-factory";
 
@@ -8,7 +8,7 @@ export class RoomService {
         return _dbFactory.rooms;
     }
 
-    public async createRoom(payload: CreateRoomModelRequest): Promise<RoomModel> {
+    public async createRoom(payload: CreateRoomRequest): Promise<RoomModel> {
 
         const newRoom: RoomModel = {
             id: uuidv4(),
@@ -37,7 +37,7 @@ export class RoomService {
         return room;
     }
     
-    public async updateRoom(userId: string, room: UpdateRoomModelRequest): Promise<RoomModel> {
+    public async updateRoom(userId: string, room: UpdateRoomRequest): Promise<RoomModel> {
         const foundRoom = _dbFactory.rooms.find(r => r.id === room.roomId);
         if (!foundRoom) throw new Error(`The room ${room.roomId} is not found`);
         if (foundRoom.ownerId !== userId) throw new Error ('Cannot update a room that you are not the owner');
@@ -48,7 +48,7 @@ export class RoomService {
         return foundRoom;
     }
 
-    public async joinRoom(userId: string, payload: JoinRoomModelRequest): Promise<RoomModel> {
+    public async joinRoom(userId: string, payload: JoinRoomRequest): Promise<RoomModel> {
         const room = _dbFactory.rooms.find(r => r.id === payload.roomId);
         if (!room) throw new Error(`The room ${payload.roomId} is not found`);
 

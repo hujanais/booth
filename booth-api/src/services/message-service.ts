@@ -1,10 +1,10 @@
-import { CreateMessageModelRequest, MessageModel, UpdateMessageModelRequest } from "../models/message-model";
+import { CreateMessageRequest, MessageModel, UpdateMessageRequest } from "../models/message-model";
 import { v4 as uuidv4 } from 'uuid';
 import _dbFactory from "../db/db-factory";
 
 export class MessageService {
 
-    public async postMessage(userId: string, payload: CreateMessageModelRequest) : Promise<MessageModel> {
+    public async postMessage(userId: string, payload: CreateMessageRequest) : Promise<MessageModel> {
         const room = _dbFactory.rooms.find(r => r.id === payload.roomId);
         if (!room) throw new Error('Cannot find the room to post-message');
         if (!room.users.find(uId => uId === userId)) throw new Error('User is not part of this room');
@@ -20,7 +20,7 @@ export class MessageService {
         return message;
     }
 
-    public async updateMessage(payload: UpdateMessageModelRequest) : Promise<MessageModel>{
+    public async updateMessage(payload: UpdateMessageRequest) : Promise<MessageModel>{
         
         let foundMsg;
         for (let i = 0; i < _dbFactory.rooms.length; i++) {

@@ -5,12 +5,12 @@ export type MessageModel = {
     message: string;
 }
 
-export type CreateMessageModelRequest = {
+export type CreateMessageRequest = {
     roomId: string;
     message: string;
 }
 
-export type UpdateMessageModelRequest = { 
+export type UpdateMessageRequest = { 
     userId: string;
     messageId: string;
     message: string;

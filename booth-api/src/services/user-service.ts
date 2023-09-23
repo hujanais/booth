@@ -1,5 +1,5 @@
 import dbFactory from "../db/db-factory";
-import { LoginUserModelRequest } from "../models/user-model";
+import { LoginUserRequest } from "../models/user-model";
 import { JWTUtility } from "../utilities/jwt-utility";
 
 export class UserService {
@@ -11,7 +11,7 @@ export class UserService {
     }
 
     // returns the bearer token
-    public login(payload: LoginUserModelRequest): string {
+    public login(payload: LoginUserRequest): string {
         const user = dbFactory.users.find(u => u.username === payload.username && u.password === payload.password);
         if (!user) {
             throw new Error (`${payload.username} is not found or invalid password`);

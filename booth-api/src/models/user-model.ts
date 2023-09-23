@@ -4,7 +4,7 @@ export type UserModel = {
     password: string;
 }
 
-export type LoginUserModelRequest = { 
+export type LoginUserRequest = { 
     username: string;
     password: string;
 }

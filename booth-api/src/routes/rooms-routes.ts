@@ -7,7 +7,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 import { RoomService } from '../services/rooms-service';
-import { CreateRoomModelRequest, JoinRoomModelRequest, RoomModel, UpdateRoomModelRequest } from "../models/room-model";
+import { CreateRoomRequest, JoinRoomRequest, RoomModel, UpdateRoomRequest } from "../models/room-model";
 const roomService = new RoomService();
 
 // Join a room.  POST /api/room/join
@@ -15,7 +15,7 @@ router.post('/room/join', async (req: Request, res: Response) => {
     const {body} = req;
     const { userId } = res.locals.userId;
 
-    const payload = body as JoinRoomModelRequest;
+    const payload = body as JoinRoomRequest;
 
     try {
         const resp = await roomService.joinRoom(userId, payload);
@@ -30,7 +30,7 @@ router.post('/room', async (req: Request, res: Response) => {
     const { body } = req;
     const { userId } = res.locals.userId;
 
-    const payload = body as CreateRoomModelRequest;
+    const payload = body as CreateRoomRequest;
     payload.ownerId = userId;
 
     try {
@@ -51,12 +51,12 @@ router.get('/rooms', async (req: Request, res: Response) => {
     }
 })
 
-// update the room. PUT /api/room --body UpdateRoomModelRequest
+// update the room. PUT /api/room --body UpdateRoomRequest
 router.put('/room', async (req: Request, res: Response) => {
     const { body } = req;
     const { userId } = res.locals.userId;
 
-    const updateRoom = body as UpdateRoomModelRequest;
+    const updateRoom = body as UpdateRoomRequest;
 
     try {
         const resp = await roomService.updateRoom(userId, updateRoom);

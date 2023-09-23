@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { UserService } from "../services/user-service";
 
 import express from "express";
-import { LoginUserModelRequest } from "../models/user-model";
+import { LoginUserRequest } from "../models/user-model";
 const router = express.Router();
 
 const _userService = new UserService();
@@ -10,7 +10,7 @@ const _userService = new UserService();
 // login. POST /api/login
 router.post('/login', async (req: Request, res: Response) => {
     const { body } = req;
-    const payload: LoginUserModelRequest = body as LoginUserModelRequest;
+    const payload: LoginUserRequest = body as LoginUserRequest;
 
     if (!payload || !payload.username || !payload.password) {
         res.status(401).send('Unauthorized');
