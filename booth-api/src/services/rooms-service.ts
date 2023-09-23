@@ -1,4 +1,4 @@
-import { RoomModel} from "../models/room-model";
+import { CreateRoomModelRequest, JoinRoomModelRequest, RoomModel, UpdateRoomModelRequest} from "../models/room-model";
 import { v4 as uuidv4 } from 'uuid';
 import _dbFactory from "../db/db-factory";
 
@@ -8,13 +8,13 @@ export class RoomService {
         return _dbFactory.rooms;
     }
 
-    public async createRoom(room: RoomModel): Promise<RoomModel> {
+    public async createRoom(payload: CreateRoomModelRequest): Promise<RoomModel> {
 
         const newRoom: RoomModel = {
             id: uuidv4(),
-            ownerId: room.ownerId,
-            title: room.title,
-            description: room.description,
+            ownerId: payload.ownerId,
+            title: payload.title,
+            description: payload.description,
             users: [],
             messages: []
         };
@@ -37,10 +37,10 @@ export class RoomService {
         return room;
     }
     
-    public async updateRoom(room: RoomModel): Promise<RoomModel> {
-        const foundRoom = _dbFactory.rooms.find(r => r.id === room.id);
-        if (!foundRoom) throw new Error(`The room ${room.id} is not found`);
-        if (foundRoom.ownerId !== room.ownerId) throw new Error ('Cannot update a room that you are not the owner');
+    public async updateRoom(userId: string, room: UpdateRoomModelRequest): Promise<RoomModel> {
+        const foundRoom = _dbFactory.rooms.find(r => r.id === room.roomId);
+        if (!foundRoom) throw new Error(`The room ${room.roomId} is not found`);
+        if (foundRoom.ownerId !== userId) throw new Error ('Cannot update a room that you are not the owner');
 
         foundRoom.title = room.title;
         foundRoom.description = room.description;
@@ -48,9 +48,9 @@ export class RoomService {
         return foundRoom;
     }
 
-    public async joinRoom(userId: string, roomId: string): Promise<RoomModel> {
-        const room = _dbFactory.rooms.find(r => r.id === roomId);
-        if (!room) throw new Error(`The room ${roomId} is not found`);
+    public async joinRoom(userId: string, payload: JoinRoomModelRequest): Promise<RoomModel> {
+        const room = _dbFactory.rooms.find(r => r.id === payload.roomId);
+        if (!room) throw new Error(`The room ${payload.roomId} is not found`);
 
         if (!room.users.find(uId => uId === userId)) {
             room.users.push(userId);

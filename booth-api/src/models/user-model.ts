@@ -1,4 +1,10 @@
 export type UserModel = {
     id: string;
-    name: string;
+    username: string;
+    password: string;
+}
+
+export type LoginUserModelRequest = { 
+    username: string;
+    password: string;
 }

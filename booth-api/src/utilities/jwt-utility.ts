@@ -12,8 +12,8 @@ private jwtSecretKey: string = '';
    * Return the encrypted data.
    * @param userId The value to encrypt
    */
-  public signToken(payload: jwt.JwtPayload): string {
-    const token = jwt.sign(payload, this.jwtSecretKey);
+  public signToken(userId: string): string {
+    const token = jwt.sign(userId, this.jwtSecretKey);
     return token;
   }
 
@@ -24,7 +24,7 @@ private jwtSecretKey: string = '';
    * @param next
    * @ returns req.userId = subject;
    */
-  public verifyJWTToken(bearerToken: string | undefined): jwt.JwtPayload {
+  public verifyJWTToken(bearerToken: string | undefined): string {
     if (!bearerToken) {
       throw new Error('unauthorized request-1');
     }
@@ -35,11 +35,11 @@ private jwtSecretKey: string = '';
     }
 
     const token = tokens[1]
-    const user = jwt.verify(token, this.jwtSecretKey) as jwt.JwtPayload;
-    if (!user) {
+    const userId = jwt.verify(token, this.jwtSecretKey) as string;
+    if (!userId) {
       throw new Error('unauthorized request-3');
     }
 
-    return user;
+    return userId;
   }
 }

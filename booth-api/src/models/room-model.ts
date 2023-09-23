@@ -8,3 +8,19 @@ export type RoomModel = {
     description: string;
     messages: MessageModel[];
 }
+
+export type CreateRoomModelRequest = {
+    ownerId: string;
+    title: string;
+    description: string;
+}
+
+export type UpdateRoomModelRequest = {
+    roomId: string;
+    title: string;
+    description: string;
+}
+
+export type JoinRoomModelRequest = {
+    roomId: string;
+}

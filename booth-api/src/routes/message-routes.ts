@@ -6,7 +6,7 @@ const router = express.Router();
 
 import * as dotenv from "dotenv";
 import { MessageService } from "../services/message-service";
-import { MessageModel } from "../models/message-model";
+import { CreateMessageModelRequest, MessageModel, UpdateMessageModelRequest } from "../models/message-model";
 dotenv.config();
 
 const messageService = new MessageService();
@@ -16,14 +16,11 @@ const USERID = uuidv4();
 // Create a new room. POST /api/message
 router.post('/message', async (req: Request, res: Response) => {
     const { body } = req;
-    const newMessage: MessageModel = {
-        ownerId: USERID,
-        roomId: body.roomId,
-        message: body.message
-    };
+    const { userId } = res.locals.userId;
+    const payload = body as CreateMessageModelRequest;
 
     try {
-        const resp = await messageService.postMessage(newMessage);
+        const resp = await messageService.postMessage(userId, payload);
         res.json(resp);
     } catch (err: any) {
         res.status(500).send(err.message);
@@ -32,17 +29,13 @@ router.post('/message', async (req: Request, res: Response) => {
 
 // Update an existing message.  PUT /api/message --body {message: ''}
 router.put('/message/:msgId', async (req: Request, res: Response) => {
-    const msgId = req.params.msgId;
+    const { userId } = res.locals.userId;
     const { body } = req;
-    const message: MessageModel = {
-        id: msgId,
-        ownerId: USERID,
-        roomId: 'not-needed',
-        message: body.message
-    }
-    
+    const payload: UpdateMessageModelRequest = body as UpdateMessageModelRequest;
+    payload.userId = userId;
+
     try {
-        const resp = await messageService.updateMessage(message);
+        const resp = await messageService.updateMessage(payload);
         res.json(resp);
     } catch (err: any) {
         res.status(500).send(err.message);
@@ -50,15 +43,10 @@ router.put('/message/:msgId', async (req: Request, res: Response) => {
 })
 
 router.delete('/message/:msgId', async (req:Request, res: Response) => {
+    const {userId} = res.locals.userId;
     const msgId = req.params.msgId;
-    const message: MessageModel = {
-        id: msgId,
-        ownerId: USERID,
-        roomId: 'not-needed',
-        message: 'not-needed'
-    }
     try {
-        const resp = await messageService.deleteMessage(message);
+        const resp = await messageService.deleteMessage(userId, msgId);
         res.json(resp);
     } catch (err: any) {
         res.status(500).send(err.message);

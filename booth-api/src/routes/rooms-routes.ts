@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { v4 as uuidv4 } from 'uuid';
 
 import express from "express";
 const router = express.Router();
@@ -8,16 +7,18 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 import { RoomService } from '../services/rooms-service';
-import { RoomModel } from "../models/room-model";
+import { CreateRoomModelRequest, JoinRoomModelRequest, RoomModel, UpdateRoomModelRequest } from "../models/room-model";
 const roomService = new RoomService();
-
-const USERID = uuidv4();
 
 // Join a room.  POST /api/room/join
 router.post('/room/join', async (req: Request, res: Response) => {
-    const roomId = req.body.roomId;
+    const {body} = req;
+    const { userId } = res.locals.userId;
+
+    const payload = body as JoinRoomModelRequest;
+
     try {
-        const resp = await roomService.joinRoom(USERID, roomId);
+        const resp = await roomService.joinRoom(userId, payload);
         res.json(resp);
     } catch (err: any) {
         res.status(500).send(err.message);
@@ -28,18 +29,12 @@ router.post('/room/join', async (req: Request, res: Response) => {
 router.post('/room', async (req: Request, res: Response) => {
     const { body } = req;
     const { userId } = res.locals.userId;
-    console.log(userId);
 
-    const newRoom: RoomModel = {
-        ownerId: USERID,
-        title: body.title,
-        description: body.description,
-        users: [],
-        messages: []
-    };
+    const payload = body as CreateRoomModelRequest;
+    payload.ownerId = userId;
 
     try {
-        const resp = await roomService.createRoom(newRoom);
+        const resp = await roomService.createRoom(payload);
         res.json(resp);
     } catch (err: any) {
         res.status(500).send(err.message);
@@ -56,19 +51,15 @@ router.get('/rooms', async (req: Request, res: Response) => {
     }
 })
 
-// update the room. PUT /api/room
+// update the room. PUT /api/room --body UpdateRoomModelRequest
 router.put('/room', async (req: Request, res: Response) => {
     const { body } = req;
-    const room: RoomModel = {
-        ownerId: USERID,
-        title: body.title,
-        description: body.description,
-        users: [],
-        messages: []
-    };
+    const { userId } = res.locals.userId;
+
+    const updateRoom = body as UpdateRoomModelRequest;
 
     try {
-        const resp = await roomService.updateRoom(room);
+        const resp = await roomService.updateRoom(userId, updateRoom);
         res.json(resp);
     } catch (err: any) {
         res.status(500).send(err.message);
@@ -77,9 +68,10 @@ router.put('/room', async (req: Request, res: Response) => {
 
 // Delete a room. DELETE /api/room/roomId
 router.delete('/room/:roomId', async (req: Request, res: Response) => {
+    const { userId } = res.locals.userId;
     try {
         const roomId = req.params.roomId;
-        const room = await roomService.deleteRoom(USERID, roomId);
+        const room = await roomService.deleteRoom(userId, roomId);
         res.json(room);
     } catch (err: any) {
         res.status(500).send(err.message);

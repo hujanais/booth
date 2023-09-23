@@ -1,44 +1,57 @@
-import { MessageModel } from "../models/message-model";
+import { CreateMessageModelRequest, MessageModel, UpdateMessageModelRequest } from "../models/message-model";
 import { v4 as uuidv4 } from 'uuid';
 import _dbFactory from "../db/db-factory";
 
 export class MessageService {
 
-    public async postMessage(message: MessageModel) : Promise<MessageModel> {
-        const room = _dbFactory.rooms.find(r => r.id === message.roomId);
+    public async postMessage(userId: string, payload: CreateMessageModelRequest) : Promise<MessageModel> {
+        const room = _dbFactory.rooms.find(r => r.id === payload.roomId);
         if (!room) throw new Error('Cannot find the room to post-message');
-        if (!room.users.find(uId => uId === message.ownerId)) throw new Error('User is not part of this room');
+        if (!room.users.find(uId => uId === userId)) throw new Error('User is not part of this room');
 
-        message.id = uuidv4();
+        const message: MessageModel = {
+            id: uuidv4(),
+            ownerId: userId,
+            roomId: payload.roomId,
+            message: payload.message,
+        }
+
         room.messages.push(message);
         return message;
     }
 
-    public async updateMessage(message: MessageModel) : Promise<MessageModel>{
-        const room = _dbFactory.rooms.find(r => r.id === message.roomId) ;
-        if (!room) throw new Error('Cannot find the room to update-message');
-        if (!room.users.find(uId => uId === message.ownerId)) throw new Error('User is not part of this room');
+    public async updateMessage(payload: UpdateMessageModelRequest) : Promise<MessageModel>{
+        
+        let foundMsg;
+        for (let i = 0; i < _dbFactory.rooms.length; i++) {
+            const room = _dbFactory.rooms[i];
+            foundMsg = room.messages.find(m => m.id === payload.messageId);
+            if (foundMsg) break;
+        }
 
-        const existingMsg = room.messages.find(m => m.id === message.id);
-        if (!existingMsg) throw new Error('The message to be updated is not found');
+        if (!foundMsg) {
+            throw new Error('The message to be updated is not found');
+        }
 
-        if(existingMsg.ownerId !== message.ownerId) throw new Error ('Cannot edit someone else\'s message');
-
-        existingMsg.message = message.message;
-        return existingMsg;
+        foundMsg.message = payload.message;
+        return foundMsg;
     }
 
-    public async deleteMessage(message: MessageModel) : Promise<MessageModel> {
-        const room = _dbFactory.rooms.find(r => r.id === message.roomId);
-        if (!room) throw new Error('Cannot find the room to delete-message');
-        
-        const idx = room.messages.findIndex(m => m.id === message.id);
-        if (idx < 0) throw new Error('The message to be deleted is not found');
-        const existingMsg = room.messages[idx];
-        if(existingMsg.ownerId !== message.ownerId) throw new Error ('Cannot edit someone else\'s message');
+    public async deleteMessage(userId: string, messageId: string) : Promise<MessageModel> {
+        for (let i = 0; i < _dbFactory.rooms.length; i++) {
+            const room = _dbFactory.rooms[i];
+            const idx = room.messages.findIndex(m => m.id === messageId);
+            if (idx >= 0) {
+                if (room.messages[idx].ownerId !== userId) {
+                    throw new Error ('Cannot edit someone else\'s message');
+                }
+                
+                const deletedMsg = {...room.messages[idx]};
+                room.messages.splice(idx, 1);
+                return deletedMsg;
+            }
+        }
 
-        room.messages.splice(idx, 1);
-
-        return existingMsg;       
+        throw new Error('message was not found');
     }
 }
