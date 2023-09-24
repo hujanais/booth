@@ -14,11 +14,21 @@ export type LoginResponse = {
 export class BoothApiService {
   private _jwtToken: string = '';
   private loginSubject$ = new Subject<LoginResponse>();
+  private joinRoomSubject$ = new Subject<RoomModel>();
+  private exitRoomSubject$ = new Subject<RoomModel>();
 
   constructor(private http: HttpClient) {}
 
   public get onLogInChanged(): Observable<LoginResponse> {
     return this.loginSubject$.asObservable();
+  }
+
+  public get enteredRoom(): Observable<RoomModel> {
+    return this.joinRoomSubject$.asObservable(); 
+  }
+
+  public get exitedRoom(): Observable<RoomModel> {
+    return this.exitRoomSubject$.asObservable();
   }
 
   // return the jwttoken
@@ -49,7 +59,11 @@ export class BoothApiService {
   }
 
   public joinRoom(roomId: string): Observable<RoomModel> {
-    return this.http.post<any>(`/api/room/join/${roomId}`, {headers: this.headers});
+    return this.http.post<any>(`/api/room/join/${roomId}`, null, {headers: this.headers}).pipe(
+      tap((roomModel: RoomModel) => {
+        this.joinRoomSubject$.next(roomModel);
+      })
+    );
   }
 
   private get headers(): HttpHeaders {

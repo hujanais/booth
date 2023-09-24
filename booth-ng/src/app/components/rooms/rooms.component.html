@@ -6,8 +6,10 @@
     <div class="div-rooms">
         <div *ngFor="let room of rooms">
             <mat-card>
-                <mat-card-title>{{room.title}}</mat-card-title>
-                <mat-card-subtitle>{{room.description}}</mat-card-subtitle>
+                <mat-card-title>
+                    {{room.title}}
+                </mat-card-title>
+                <mat-card-subtitle>{{room.description}} {{room.users.length}}</mat-card-subtitle>
                 <mat-card-actions>
                     <button mat-icon-button (click)="deleteRoom(room.id)"><mat-icon>delete</mat-icon></button>
                     <button mat-icon-button (click)="joinRoom(room.id)"><mat-icon>chat</mat-icon></button>

@@ -6,13 +6,14 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
 import { AngularMaterialModule } from './angular-material.module';
-import { LoginComponent } from './component/login/login.component';
-import { RoomsComponent } from './component/rooms/rooms.component';
-import { CreateRoomComponent } from './component/create-room/create-room.component';
+import { LoginComponent } from './components/login/login.component';
+import { RoomsComponent } from './components/rooms/rooms.component';
+import { CreateRoomComponent } from './components/create-room/create-room.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input'
+import { RoomComponent } from './components/room/room.component';
 
 @NgModule({
   declarations: [
@@ -20,6 +21,7 @@ import { MatInputModule } from '@angular/material/input'
     LoginComponent,
     RoomsComponent,
     CreateRoomComponent,
+    RoomComponent
   ],
   imports: [
     BrowserModule,

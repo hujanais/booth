@@ -1,0 +1,10 @@
+.div-login-container { 
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    column-gap: 5px;
+
+    .div-description mat-form-field {
+        width: 450px;
+    }
+}
