@@ -1,4 +1,4 @@
-import { CreateRoomRequest, JoinRoomRequest, RoomModel, UpdateRoomRequest} from "../models/room-model";
+import { CreateRoomRequest, RoomModel, UpdateRoomRequest} from "../models/room-model";
 import { v4 as uuidv4 } from 'uuid';
 import _dbFactory from "../db/db-factory";
 
@@ -8,11 +8,11 @@ export class RoomService {
         return _dbFactory.rooms;
     }
 
-    public async createRoom(payload: CreateRoomRequest): Promise<RoomModel> {
+    public async createRoom(userId: string, payload: CreateRoomRequest): Promise<RoomModel> {
 
         const newRoom: RoomModel = {
             id: uuidv4(),
-            ownerId: payload.ownerId,
+            ownerId: userId,
             title: payload.title,
             description: payload.description,
             users: [],
@@ -48,9 +48,9 @@ export class RoomService {
         return foundRoom;
     }
 
-    public async joinRoom(userId: string, payload: JoinRoomRequest): Promise<RoomModel> {
-        const room = _dbFactory.rooms.find(r => r.id === payload.roomId);
-        if (!room) throw new Error(`The room ${payload.roomId} is not found`);
+    public async joinRoom(userId: string, roomId: string): Promise<RoomModel> {
+        const room = _dbFactory.rooms.find(r => r.id === roomId);
+        if (!room) throw new Error(`The room ${roomId} is not found`);
 
         if (!room.users.find(uId => uId === userId)) {
             room.users.push(userId);

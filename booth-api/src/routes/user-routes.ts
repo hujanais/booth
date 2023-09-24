@@ -17,10 +17,10 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 
     try {
-        const user = _userService.login(payload);
-        res.json(user);
+        const jwtToken = _userService.login(payload);
+        res.json(jwtToken);
     } catch (err: any) {
-        res.status(500).send(err.message);
+        res.status(401).send(err.message);
     }
 });
 

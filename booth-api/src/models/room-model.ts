@@ -10,7 +10,6 @@ export type RoomModel = {
 }
 
 export type CreateRoomRequest = {
-    ownerId: string;
     title: string;
     description: string;
 }
@@ -19,8 +18,4 @@ export type UpdateRoomRequest = {
     roomId: string;
     title: string;
     description: string;
-}
-
-export type JoinRoomRequest = {
-    roomId: string;
 }
