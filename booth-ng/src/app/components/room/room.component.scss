@@ -1,5 +1,26 @@
 .div-room-container {
-    display: flex;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
     height: 100%;
     border: 1px solid gray;
+
+    .div-header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        column-gap: 5px;
+        padding: 5px;
+    }
+
+    .div-messages { 
+        display: flex;
+        overflow-y: scroll;
+        border: 1px solid green;
+        padding: 5px;
+    }
+
+    .div-send-message mat-form-field {
+        width: 100%;
+        padding: 5px;
+    }
 }

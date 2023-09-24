@@ -14,6 +14,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input'
 import { RoomComponent } from './components/room/room.component';
+import { ChatBubbleComponent } from './components/chat-bubble/chat-bubble.component';
 
 @NgModule({
   declarations: [
@@ -21,7 +22,8 @@ import { RoomComponent } from './components/room/room.component';
     LoginComponent,
     RoomsComponent,
     CreateRoomComponent,
-    RoomComponent
+    RoomComponent,
+    ChatBubbleComponent
   ],
   imports: [
     BrowserModule,
