@@ -14,7 +14,8 @@
             "program": "${workspaceFolder}/booth-api/dist/app.js",
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
-            ]
+            ],
+            "envFile":"${workspaceFolder}/booth-api/.env"
         }
     ]
 }
