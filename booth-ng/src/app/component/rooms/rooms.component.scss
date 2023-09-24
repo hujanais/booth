@@ -1,0 +1,30 @@
+.div-rooms-container {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid orange;
+    height: 300px;
+}
+
+.div-rooms-action-row {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    align-items: center;
+}
+
+.span-action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: center
+}
+
+.div-rooms {
+    flex:1;
+    overflow-y: scroll;
+    border: 1px solid red;
+
+    mat-card {
+        padding: 10px;
+    }
+}
