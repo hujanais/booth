@@ -1,6 +1,7 @@
 import { CreateRoomRequest, RoomModel, UpdateRoomRequest} from "../models/room-model";
 import { v4 as uuidv4 } from 'uuid';
 import _dbFactory from "../db/db-factory";
+import wssService from '../websocket/wss';
 
 export class RoomService {
 
@@ -21,6 +22,8 @@ export class RoomService {
 
         _dbFactory.rooms.push(newRoom);
 
+        wssService.notifyRoomAdded(newRoom, _dbFactory.rooms);
+
         return newRoom;
     }
 
@@ -34,6 +37,9 @@ export class RoomService {
         if (idx >= 0) {
             _dbFactory.rooms.splice(idx, 1);
         }
+
+        wssService.notifyRoomAdded(room, _dbFactory.rooms);
+
         return room;
     }
     
@@ -45,6 +51,8 @@ export class RoomService {
         foundRoom.title = room.title;
         foundRoom.description = room.description;
 
+        wssService.notifyRoomChanged(foundRoom);
+
         return foundRoom;
     }
 
@@ -52,8 +60,10 @@ export class RoomService {
         const room = _dbFactory.rooms.find(r => r.id === roomId);
         if (!room) throw new Error(`The room ${roomId} is not found`);
 
-        if (!room.users.find(uId => uId === userId)) {
+        const user = _dbFactory.users.find(user => user.id === userId);
+        if (user) {
             room.users.push(userId);
+            wssService.notifyUserJoined(user.username, room);
         }
 
         return room;
@@ -62,9 +72,15 @@ export class RoomService {
     public async exitRoom(userId: string, roomId: string): Promise<void> {
         const room = _dbFactory.rooms.find(r => r.id === roomId);
         if (!room) throw new Error(`The room ${roomId} is not found`);
+
         const idx = room.users.findIndex(uId => uId === userId);
         if (idx >= 0) {
             room.users.splice(idx, 1);
+
+            const user = _dbFactory.users.find(user => user.id === userId);
+            if (user) {
+                wssService.notifyUserLeft(user.username, room);
+            }
         }
     }
 }

@@ -1,8 +1,14 @@
+import * as dotenv from "dotenv";
+dotenv.config();
 import WebSocket from 'ws';
+import { RoomModel } from "../models/room-model";
+import { RoomChangedModel, RoomUpdatedModel, UserChangedModel } from "../models/ws-models";
 
 export type WebSocketEx = WebSocket & {uid: string};
 
-export class WSService {
+const ws_port = +(process.env.WEBSOCKET_PORT || "3001");
+
+class WSService {
     private _wss: WebSocket.Server;
     private _channels: Map<string, WebSocketEx> = new Map<string, WebSocketEx>();
 
@@ -15,7 +21,7 @@ export class WSService {
     }
 
     constructor() {
-        this._wss = new WebSocket.Server({port:3001});
+        this._wss = new WebSocket.Server({port: ws_port});
 
         this._wss.on('connection', (ws: WebSocketEx, request: any) => {
             const uId = this.parseUserId(request.url);
@@ -34,26 +40,62 @@ export class WSService {
             ws.onclose = (event: WebSocket.CloseEvent) => {
                 this._channels.delete(ws.uid);
             }
-
-            // Listen for messages from the client
-            // ws.on('message', (message: string) => {
-            //   console.log(`Received message: ${message}`);
-          
-            //   // Broadcast the message to all clients
-            //   const parsedMessage: Message = JSON.parse(message);
-            //   this._wss.clients.forEach(client => {
-            //     if (client !== ws && client.readyState === WebSocket.OPEN) {
-            //       client.send(JSON.stringify(parsedMessage));
-            //     }
-            //   });
-            // });
-          
-            // // Listen for WebSocket closure
-            // ws.on('close', () => {
-            //   console.log('WebSocket client disconnected.');
-            // });
           });
     }
 
+    public notifyRoomAdded(room: RoomModel, rooms: RoomModel[]): void {
+        const payload: RoomChangedModel = {
+            room: {...room},
+            rooms: [...rooms]
+        };
+        this._channels.forEach((ws, key, map) => {
+            ws.send(JSON.stringify(payload));
+        });
+    }
 
+    public notifyRoomRemoved(room: RoomModel, rooms: RoomModel[]): void {
+        const payload: RoomChangedModel = {
+            room: {...room},
+            rooms: [...rooms]
+        };
+        this._channels.forEach((ws, key, map) => {
+            ws.send(JSON.stringify(payload));
+        });
+    }
+
+    public notifyRoomChanged(room: RoomModel): void {
+        const payload: RoomUpdatedModel = {
+            room: { ...room },
+        }
+
+        this._channels.forEach((ws, key, map) => {
+            ws.send(JSON.stringify(payload));
+        });
+    }
+
+    public notifyUserJoined(username: string, room: RoomModel): void {
+        const payload: UserChangedModel = {
+            username: "",
+            room: {...room}
+        }
+
+        this._channels.forEach((ws, key, map) => {
+            ws.send(JSON.stringify(payload));
+        });
+    }
+    
+    public notifyUserLeft(username: string, room: RoomModel): void {
+        const payload: UserChangedModel = {
+            username: "",
+            room: {...room}
+        }
+
+        this._channels.forEach((ws, key, map) => {
+            ws.send(JSON.stringify(payload));
+        });
+    }
+    
+    public notifyNewMessage(): void {}
 }
+
+export default new WSService();

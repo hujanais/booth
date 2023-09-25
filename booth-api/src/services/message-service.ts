@@ -1,6 +1,7 @@
 import { CreateMessageRequest, MessageModel, UpdateMessageRequest } from "../models/message-model";
 import { v4 as uuidv4 } from 'uuid';
 import _dbFactory from "../db/db-factory";
+import wssService from '../websocket/wss';
 
 export class MessageService {
 
@@ -14,9 +15,13 @@ export class MessageService {
             ownerId: userId,
             roomId: payload.roomId,
             message: payload.message,
+            timestamp: Date.now().valueOf(),
         }
 
         room.messages.push(message);
+
+        wssService.notifyNewMessage();
+
         return message;
     }
 

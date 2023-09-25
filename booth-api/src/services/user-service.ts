@@ -21,7 +21,7 @@ export class UserService {
     }
 
     public logout() {
-
+        
     }
 
     public unregister() {

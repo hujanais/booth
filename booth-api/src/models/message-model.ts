@@ -3,6 +3,7 @@ export type MessageModel = {
     ownerId: string;
     roomId: string;
     message: string;
+    timestamp: number;
 }
 
 export type CreateMessageRequest = {
