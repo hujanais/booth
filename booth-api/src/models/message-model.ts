@@ -1,6 +1,8 @@
+import { UserModel } from "./user-model";
+
 export type MessageModel = {
     id: string;
-    ownerId: string;
+    owner: UserModel;
     roomId: string;
     message: string;
     timestamp: number;

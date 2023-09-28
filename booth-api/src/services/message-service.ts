@@ -8,11 +8,12 @@ export class MessageService {
     public async postMessage(userId: string, payload: CreateMessageRequest) : Promise<MessageModel> {
         const room = _dbFactory.rooms.find(r => r.id === payload.roomId);
         if (!room) throw new Error('Cannot find the room to post-message');
-        if (!room.users.find(uId => uId === userId)) throw new Error('User is not part of this room');
+        const user = room.users.find(user => user.id === userId);
+        if (!user) throw new Error('User is not part of this room');
 
         const message: MessageModel = {
             id: uuidv4(),
-            ownerId: userId,
+            owner: {id: user.id, username: user.username},
             roomId: payload.roomId,
             message: payload.message,
             timestamp: Date.now().valueOf(),
@@ -47,7 +48,7 @@ export class MessageService {
             const room = _dbFactory.rooms[i];
             const idx = room.messages.findIndex(m => m.id === messageId);
             if (idx >= 0) {
-                if (room.messages[idx].ownerId !== userId) {
+                if (room.messages[idx].owner.id !== userId) {
                     throw new Error ('Cannot edit someone else\'s message');
                 }
                 

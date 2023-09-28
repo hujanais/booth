@@ -1,9 +1,10 @@
 import { MessageModel } from "./message-model";
+import { UserModel } from "./user-model";
 
 export type RoomModel = {
     id?: string;
-    ownerId: string;
-    users: string[];
+    owner: UserModel;
+    users: UserModel[];
     title: string;
     description: string;
     messages: MessageModel[];

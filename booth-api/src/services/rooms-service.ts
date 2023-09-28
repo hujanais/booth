@@ -11,9 +11,15 @@ export class RoomService {
 
     public async createRoom(userId: string, payload: CreateRoomRequest): Promise<RoomModel> {
 
+        const user = _dbFactory.users.find(u => u.id === userId);
+        if (!user) throw new Error('Sorry invalid userId');
+
         const newRoom: RoomModel = {
             id: uuidv4(),
-            ownerId: userId,
+            owner: {
+                id: user.id,
+                username: user.username
+            },
             title: payload.title,
             description: payload.description,
             users: [],
@@ -31,7 +37,7 @@ export class RoomService {
         const room = _dbFactory.rooms.find(r => r.id === roomId);
         if (!room) throw new Error(`The room ${roomId} is not found`);
 
-        if (room.ownerId !== userId) throw new Error ('Cannot delete a room that you are not the owner');
+        if (room.owner.id !== userId) throw new Error ('Cannot delete a room that you are not the owner');
 
         const idx = _dbFactory.rooms.findIndex(r => r.id === roomId);
         if (idx >= 0) {
@@ -46,7 +52,7 @@ export class RoomService {
     public async updateRoom(userId: string, room: UpdateRoomRequest): Promise<RoomModel> {
         const foundRoom = _dbFactory.rooms.find(r => r.id === room.roomId);
         if (!foundRoom) throw new Error(`The room ${room.roomId} is not found`);
-        if (foundRoom.ownerId !== userId) throw new Error ('Cannot update a room that you are not the owner');
+        if (foundRoom.owner.id !== userId) throw new Error ('Cannot update a room that you are not the owner');
 
         foundRoom.title = room.title;
         foundRoom.description = room.description;
@@ -62,7 +68,7 @@ export class RoomService {
 
         const user = _dbFactory.users.find(user => user.id === userId);
         if (user) {
-            room.users.push(userId);
+            room.users.push({id: user.id, username: user.username});
             wssService.notifyUserJoined(user.username, room);
         }
 
@@ -73,7 +79,7 @@ export class RoomService {
         const room = _dbFactory.rooms.find(r => r.id === roomId);
         if (!room) throw new Error(`The room ${roomId} is not found`);
 
-        const idx = room.users.findIndex(uId => uId === userId);
+        const idx = room.users.findIndex(user => user.id === userId);
         if (idx >= 0) {
             room.users.splice(idx, 1);
 

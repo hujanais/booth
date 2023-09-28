@@ -13,7 +13,7 @@ class WSService {
     private _channels: Map<string, WebSocketEx> = new Map<string, WebSocketEx>();
 
     private parseUserId = (url: string): string | null=> {
-        // /?uid=12345
+        // /?jwtToken=12345
         const matches = url.split('=');
         if (matches.length === 2) return matches[1];
         
@@ -24,6 +24,7 @@ class WSService {
         this._wss = new WebSocket.Server({port: ws_port});
 
         this._wss.on('connection', (ws: WebSocketEx, request: any) => {
+            console.log('connect to ', request.url);
             const uId = this.parseUserId(request.url);
             if (!uId) {
                 console.log('handle missing uId');
@@ -45,8 +46,8 @@ class WSService {
 
     public notifyRoomAdded(room: RoomModel, rooms: RoomModel[]): void {
         const payload: RoomChangedModel = {
-            room: {...room},
-            rooms: [...rooms]
+                room: {...room},
+                rooms: [...rooms]
         };
         this._channels.forEach((ws, key, map) => {
             ws.send(JSON.stringify(payload));
@@ -55,8 +56,8 @@ class WSService {
 
     public notifyRoomRemoved(room: RoomModel, rooms: RoomModel[]): void {
         const payload: RoomChangedModel = {
-            room: {...room},
-            rooms: [...rooms]
+                room: {...room},
+                rooms: [...rooms]
         };
         this._channels.forEach((ws, key, map) => {
             ws.send(JSON.stringify(payload));
