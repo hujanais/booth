@@ -2,13 +2,15 @@
     <div class="div-header">
         <div>{{title}}</div>
         <div>{{description}}</div>
+        <div>{{message}}</div>
+        <button mat-icon-button (click)="exitRoom()"><mat-icon>delete</mat-icon></button>
     </div>
     <div class='div-messages'>body</div>
     <div class="div-send-message">
         <form [formGroup]="form">
             <mat-form-field>
                 <mat-label>New Message</mat-label>
-                <input matInput formControlName="message" required>
+                <input matInput formControlName="chat" required>
             </mat-form-field>
         </form>
     </div>
