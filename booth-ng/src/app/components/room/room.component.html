@@ -1,9 +1,9 @@
 <div class="div-room-container">
     <div class="div-header">
-        <div>{{title}}</div>
-        <div>{{description}}</div>
+        <div>{{currentRoom?.title}}</div>
+        <div>{{currentRoom?.description}}</div>
         <div>{{message}}</div>
-        <button mat-icon-button (click)="exitRoom()"><mat-icon>delete</mat-icon></button>
+        <button mat-icon-button (click)="doExitRoom()"><mat-icon>delete</mat-icon></button>
     </div>
     <div class='div-messages'>body</div>
     <div class="div-send-message">

@@ -104,11 +104,11 @@ export class RoomsComponent implements OnDestroy {
   public joinRoom(roomId: string | undefined) {
     if (!roomId) return;
     this.api.joinRoom(roomId).subscribe({
-      next: (flag: boolean) => {
-        console.log('### joinRoom', flag)
+      next: (room: RoomModel) => {
+        console.log('### joinRoom', room)
       },
       error: (err) => {
-        console.log('### joinRoom exception', err.meesage)
+        console.log('### joinRoom exception', err.message)
       }
     });
   }

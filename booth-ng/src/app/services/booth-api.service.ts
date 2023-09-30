@@ -17,8 +17,6 @@ export class BoothApiService {
   private _wss: WebsocketService;
   private _jwtToken: string = '';
   private loginSubject$ = new Subject<LoginResponse>();
-  private enterRoomSubject$ = new Subject<RoomModel>();
-  private exitRoomSubject$ = new Subject<RoomModel>();
 
   constructor(private http: HttpClient) {
     this._wss = new WebsocketService();
@@ -30,14 +28,6 @@ export class BoothApiService {
 
   public get onLogInChanged(): Observable<LoginResponse> {
     return this.loginSubject$.asObservable();
-  }
-
-  public get onEnterRoom(): Observable<RoomModel> {
-    return this.enterRoomSubject$.asObservable();
-  }
-
-  public get onExitRoom(): Observable<RoomModel> {
-    return this.enterRoomSubject$.asObservable();
   }
 
   // return the jwttoken
@@ -68,31 +58,40 @@ export class BoothApiService {
     return this.http.delete<RoomModel>(`/api/room/${roomId}`, { headers: this.headers });
   }
 
-  public joinRoom(roomId: string): Observable<boolean> {
-    return this.http.post<any>(`/api/room/join/${roomId}`, null, { headers: this.headers }).pipe(
-      switchMap((room: RoomModel) => {
-        console.log(room);
-        this.enterRoomSubject$.next(room);
-        return of(true)
-      }),
-      catchError((err: HttpErrorResponse) => {
-        console.log(err);
-        return of(false)
-      }))
+  public joinRoom(roomId: string): Observable<RoomModel> {
+    return this.http.post<RoomModel>(`/api/room/join/${roomId}`, null, { headers: this.headers });
   }
 
-  public exitRoom(roomId: string): Observable<boolean> {
-    return this.http.delete<any>(`/api/room/join/${roomId}`, { headers: this.headers }).pipe(
-      switchMap((room: RoomModel) => {
-        console.log(room);
-        this.exitRoomSubject$.next(room);
-        return of(true)
-      }),
-      catchError((err: HttpErrorResponse) => {
-        console.log(err);
-        return of(false)
-      }))
+  public exitRoom(roomId: string): Observable<RoomModel> {
+    return this.http.delete<RoomModel>(`/api/room/join/${roomId}`, { headers: this.headers });
   }
+
+
+  // public joinRoom(roomId: string): Observable<boolean> {
+  //   return this.http.post<any>(`/api/room/join/${roomId}`, null, { headers: this.headers }).pipe(
+  //     switchMap((room: RoomModel) => {
+  //       console.log(room);
+  //       this.enterRoomSubject$.next(room);
+  //       return of(true)
+  //     }),
+  //     catchError((err: HttpErrorResponse) => {
+  //       console.log(err);
+  //       return of(false)
+  //     }))
+  // }
+
+  // public exitRoom(roomId: string): Observable<boolean> {
+  //   return this.http.delete<any>(`/api/room/join/${roomId}`, { headers: this.headers }).pipe(
+  //     switchMap((room: RoomModel) => {
+  //       console.log(room);
+  //       this.exitRoomSubject$.next(room);
+  //       return of(true)
+  //     }),
+  //     catchError((err: HttpErrorResponse) => {
+  //       console.log(err);
+  //       return of(false)
+  //     }))
+  // }
 
   private get headers(): HttpHeaders {
     return new HttpHeaders({ 'Authorization': `Bearer ${this._jwtToken}` });

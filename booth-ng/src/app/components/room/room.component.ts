@@ -3,7 +3,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Subscription, filter } from 'rxjs';
 import { RoomModel } from 'src/app/models/room-model';
-import { ChangeModel, ChangeType, RoomChangedModel, RoomUpdatedModel } from 'src/app/models/ws-models';
+import { ChangeModel, ChangeType, RoomChangedModel, RoomUpdatedModel, UserEnterExitRoomModel } from 'src/app/models/ws-models';
 import { BoothApiService } from 'src/app/services/booth-api.service';
 
 @Component({
@@ -16,8 +16,7 @@ export class RoomComponent implements OnInit, OnDestroy {
   private _subscriptions = new Subscription();
 
   public form: FormGroup;
-  public title: string = 'room-title';
-  public description: string = 'room-description';
+  public currentRoom: RoomModel | undefined;
   public message = '';
 
   constructor(private api: BoothApiService, private fb: FormBuilder) {
@@ -27,61 +26,41 @@ export class RoomComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // const obs$ = this.api.onChanged.pipe(
-    //   filter((payload: ChangeModel<any>) => {
-    //     switch (payload.changeType) {
-    //       case ChangeType.RoomAdded:
-    //       case ChangeType.RoomUpdated:
-    //       case ChangeType.RoomDeleted:
-    //         return true;
-    //       default:
-    //         return false;
-    //     }
-    //   })).subscribe(
-    //     {
-    //       next: (payload: ChangeModel<RoomChangedModel | RoomUpdatedModel>) => {
-    //         this.message = '';
-    //       },
-    //       error: (err: HttpErrorResponse) => {
-    //         this.message = `${err.status}. ${err.statusText}`;
-    //       }
-    //     }
-    //   );
-
-    const obs$2 = this.api.onEnterRoom.subscribe(
+    const obs$2 = this.api.onChanged.subscribe(
       {
-        next: (room: RoomModel) => {
-          this.enterRoom(room);
+        next: (payload: ChangeModel<UserEnterExitRoomModel>) => {
+          if (payload.changeType === ChangeType.UserEntered) {
+            console.log('enter', payload.data);
+          } else if (payload.changeType === ChangeType.UserExited) {
+            console.log('exit', payload.data);
+          }
         },
-        error: (err: HttpErrorResponse) => {
-          this.message = `${err.status}. ${err.statusText}`;
-        }
+        error: (err: HttpErrorResponse) => { }
       }
     );
 
-    const obs$3 = this.api.onExitRoom.subscribe(
-      {
-        next: (room: RoomModel) => { },
-        error: (err: HttpErrorResponse) => {
-          this.message = `${err.status}. ${err.statusText}`;
-        }
-      }
-    );
-
-    // this._subscriptions.add(obs$);
     this._subscriptions.add(obs$2);
-    this._subscriptions.add(obs$3);
   }
 
   ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  private enterRoom(room: RoomModel) {
-    this.title = room.title;
-    this.description = room.description;
+  public doExitRoom() {
+    if (!this.currentRoom || !this.currentRoom.id) {
+      console.log('### doExitRoom failed');
+      return;
+    }
+
+    this.api.exitRoom(this.currentRoom.id).subscribe(
+      {
+        next: () => {
+          console.log('### exited room');
+        },
+        error: (err: HttpErrorResponse) => {
+          console.log('### doExitRoom failed', `${err.status}. ${err.statusText}`);
+        }
+      }
+    );
   }
-
-  public exitRoom() { }
-
 }
