@@ -2,7 +2,8 @@ import * as dotenv from "dotenv";
 dotenv.config();
 import WebSocket from 'ws';
 import { RoomModel } from "../models/room-model";
-import { ChangeModel, ChangeType, RoomChangedModel, RoomUpdatedModel, UserChangedModel } from "../models/ws-models";
+import { ChangeModel, ChangeType, RoomChangedModel, RoomUpdatedModel, UserEnterExitRoomModel } from "../models/ws-models";
+import { UserModel } from "../models/user-model";
 
 export type WebSocketEx = WebSocket & { uid: string };
 
@@ -10,7 +11,7 @@ const ws_port = +(process.env.WEBSOCKET_PORT || "3001");
 
 class WSService {
     private _wss: WebSocket.Server;
-    private _channels: Map<string, WebSocketEx> = new Map<string, WebSocketEx>();
+    private users: Map<string, WebSocketEx> = new Map<string, WebSocketEx>();
 
     private parseUserId = (url: string): string | null => {
         // /?jwtToken=12345
@@ -31,7 +32,7 @@ class WSService {
                 return;
             }
             ws.uid = uId;
-            this._channels.set(uId, ws);
+            this.users.set(uId, ws);
 
             ws.onmessage = (event: WebSocket.MessageEvent) => {
                 console.log(event.data);
@@ -39,7 +40,7 @@ class WSService {
             };
 
             ws.onclose = (event: WebSocket.CloseEvent) => {
-                this._channels.delete(ws.uid);
+                this.users.delete(ws.uid);
             }
         });
     }
@@ -53,7 +54,7 @@ class WSService {
                 rooms: [...rooms]
             }
         };
-        this._channels.forEach((ws, key, map) => {
+        this.users.forEach((ws, key, map) => {
             ws.send(JSON.stringify(payload));
         });
     }
@@ -67,7 +68,7 @@ class WSService {
                 rooms: [...rooms]
             }
         };
-        this._channels.forEach((ws, key, map) => {
+        this.users.forEach((ws, key, map) => {
             ws.send(JSON.stringify(payload));
         });
     }
@@ -81,30 +82,26 @@ class WSService {
             }
         };
 
-        this._channels.forEach((ws, key, map) => {
+        this.users.forEach((ws, key, map) => {
             ws.send(JSON.stringify(payload));
         });
     }
 
-    public notifyUserJoined(username: string, room: RoomModel): void {
-        const payload: UserChangedModel = {
-            username: "",
-            room: { ...room }
-        }
-
-        this._channels.forEach((ws, key, map) => {
-            ws.send(JSON.stringify(payload));
+    // only notify registered users
+    public notifyUserJoined(payload: UserEnterExitRoomModel): void {
+        this.users.forEach((ws, key, map) => {
+            if (payload.room.users.map(u => u.id).includes(key)) {
+                ws.send(JSON.stringify(payload));
+            }
         });
     }
 
-    public notifyUserLeft(username: string, room: RoomModel): void {
-        const payload: UserChangedModel = {
-            username: "",
-            room: { ...room }
-        }
-
-        this._channels.forEach((ws, key, map) => {
-            ws.send(JSON.stringify(payload));
+    // only notify registered users
+    public notifyUserLeft(payload: UserEnterExitRoomModel): void {
+        this.users.forEach((ws, key, map) => {
+            if (payload.room.users.map(u => u.id).includes(key) || payload.user.id === key) {
+                ws.send(JSON.stringify(payload));
+            }
         });
     }
 

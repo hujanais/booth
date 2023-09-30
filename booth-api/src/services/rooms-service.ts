@@ -69,7 +69,8 @@ export class RoomService {
         const user = _dbFactory.users.find(user => user.id === userId);
         if (user) {
             room.users.push({ id: user.id, username: user.username });
-            wssService.notifyUserJoined(user.username, room);
+            wssService.notifyRoomChanged(room);
+            wssService.notifyUserJoined({ user, room });
         }
 
         return room;
@@ -85,9 +86,11 @@ export class RoomService {
 
             const user = _dbFactory.users.find(user => user.id === userId);
             if (user) {
-                wssService.notifyUserLeft(user.username, room);
+                wssService.notifyRoomChanged(room);
+                wssService.notifyUserLeft({ user, room });
             }
         }
+
         return room;
     }
 }
