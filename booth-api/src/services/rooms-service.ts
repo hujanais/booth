@@ -2,6 +2,7 @@ import { CreateRoomRequest, RoomModel, UpdateRoomRequest } from "../models/room-
 import { v4 as uuidv4 } from 'uuid';
 import _dbFactory from "../db/db-factory";
 import wssService from '../websocket/wss';
+import { UserEnterExitRoomModel } from "../models/ws-models";
 
 export class RoomService {
 
@@ -68,9 +69,22 @@ export class RoomService {
 
         const user = _dbFactory.users.find(user => user.id === userId);
         if (user) {
+            if (room.users.find(p => p.id === user.id)) {
+                // user already in the room.
+                return room;
+            }
+
             room.users.push({ id: user.id, username: user.username });
             wssService.notifyRoomChanged(room);
-            wssService.notifyUserJoined({ user, room });
+
+            const notifyUserJoinedPayload: UserEnterExitRoomModel = {
+                user: {
+                    id: user.id,
+                    username: user.username
+                },
+                room: { ...room }
+            };
+            wssService.notifyUserJoined(notifyUserJoinedPayload);
         }
 
         return room;
@@ -82,12 +96,20 @@ export class RoomService {
 
         const idx = room.users.findIndex(user => user.id === userId);
         if (idx >= 0) {
-            room.users.splice(idx, 1);
-
             const user = _dbFactory.users.find(user => user.id === userId);
             if (user) {
+                const notifyUserLeftPayload: UserEnterExitRoomModel = {
+                    user: {
+                        id: user.id,
+                        username: user.username
+                    },
+                    room: { ...room }
+                };
+                wssService.notifyUserLeft(notifyUserLeftPayload);
+
+                room.users.splice(idx, 1);
                 wssService.notifyRoomChanged(room);
-                wssService.notifyUserLeft({ user, room });
+
             }
         }
 

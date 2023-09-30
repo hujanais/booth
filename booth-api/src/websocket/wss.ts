@@ -3,7 +3,7 @@ dotenv.config();
 import WebSocket from 'ws';
 import { RoomModel } from "../models/room-model";
 import { ChangeModel, ChangeType, RoomChangedModel, RoomUpdatedModel, UserEnterExitRoomModel } from "../models/ws-models";
-import { UserModel } from "../models/user-model";
+import { JWTUtility } from "../utilities/jwt-utility";
 
 export type WebSocketEx = WebSocket & { uid: string };
 
@@ -12,8 +12,9 @@ const ws_port = +(process.env.WEBSOCKET_PORT || "3001");
 class WSService {
     private _wss: WebSocket.Server;
     private users: Map<string, WebSocketEx> = new Map<string, WebSocketEx>();
+    private jwtUtility = new JWTUtility(process.env.JWT_SECRET || '');
 
-    private parseUserId = (url: string): string | null => {
+    private parseJwtToken = (url: string): string | null => {
         // /?jwtToken=12345
         const matches = url.split('=');
         if (matches.length === 2) return matches[1];
@@ -25,14 +26,15 @@ class WSService {
         this._wss = new WebSocket.Server({ port: ws_port });
 
         this._wss.on('connection', (ws: WebSocketEx, request: any) => {
-            console.log('connect to ', request.url);
-            const uId = this.parseUserId(request.url);
-            if (!uId) {
-                console.log('handle missing uId');
+            const jwtTokenId = this.parseJwtToken(request.url);
+            if (!jwtTokenId) {
+                console.log('handle missing jwtTokenId');
                 return;
             }
+            const uId = this.jwtUtility.decodeJWTToken(jwtTokenId);
             ws.uid = uId;
             this.users.set(uId, ws);
+            console.log('connect to ', request.url, uId);
 
             ws.onmessage = (event: WebSocket.MessageEvent) => {
                 console.log(event.data);
@@ -88,18 +90,34 @@ class WSService {
     }
 
     // only notify registered users
-    public notifyUserJoined(payload: UserEnterExitRoomModel): void {
+    public notifyUserJoined(model: UserEnterExitRoomModel): void {
+        const payload: ChangeModel<UserEnterExitRoomModel> = {
+            changeType: ChangeType.UserEntered,
+            data: {
+                user: model.user,
+                room: model.room
+            }
+        }
+
         this.users.forEach((ws, key, map) => {
-            if (payload.room.users.map(u => u.id).includes(key)) {
+            if (model.room.users.map(u => u.id).includes(key)) {
                 ws.send(JSON.stringify(payload));
             }
         });
     }
 
     // only notify registered users
-    public notifyUserLeft(payload: UserEnterExitRoomModel): void {
+    public notifyUserLeft(model: UserEnterExitRoomModel): void {
+        const payload: ChangeModel<UserEnterExitRoomModel> = {
+            changeType: ChangeType.UserExited,
+            data: {
+                user: model.user,
+                room: model.room
+            }
+        }
+
         this.users.forEach((ws, key, map) => {
-            if (payload.room.users.map(u => u.id).includes(key) || payload.user.id === key) {
+            if (model.room.users.map(u => u.id).includes(key)) {
                 ws.send(JSON.stringify(payload));
             }
         });

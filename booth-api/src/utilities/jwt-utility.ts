@@ -2,11 +2,11 @@ import * as jwt from 'jsonwebtoken';
 
 export class JWTUtility {
 
-private jwtSecretKey: string = '';
+  private jwtSecretKey: string = '';
 
   constructor(jwt_secret: string) {
     this.jwtSecretKey = jwt_secret;
-}
+  }
 
   /**
    * Return the encrypted data.
@@ -19,10 +19,8 @@ private jwtSecretKey: string = '';
 
   /**
    * Verify token middleware.
-   * @param req
-   * @param resp
-   * @param next
-   * @ returns req.userId = subject;
+   * @param bearerToken 'Bearer XXXXX'
+   * @ returns userId
    */
   public verifyJWTToken(bearerToken: string | undefined): string {
     if (!bearerToken) {
@@ -31,7 +29,7 @@ private jwtSecretKey: string = '';
 
     const tokens = bearerToken.split(' ');
     if (tokens.length !== 2) {
-        throw new Error('unauthorized request-2');
+      throw new Error('unauthorized request-2');
     }
 
     const token = tokens[1]
@@ -40,6 +38,14 @@ private jwtSecretKey: string = '';
       throw new Error('unauthorized request-3');
     }
 
+    return userId;
+  }
+
+  public decodeJWTToken(token: string): string {
+    const userId = jwt.verify(token, this.jwtSecretKey) as string;
+    if (!userId) {
+      throw new Error('unauthorized request-3');
+    }
     return userId;
   }
 }
