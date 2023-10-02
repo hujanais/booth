@@ -7,6 +7,11 @@ class DBFactory {
             id: '11111',    // Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IjExMTExIiwiaWF0IjoxNjk1NDA1MDYyfQ.41Y2fsAm4kAIv061fGjaaDZ-InVdQpaGqbXhcm1Be4o
             username: 'satu',
             password: 'password'
+        },
+        {
+            id: '22222',    // Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IjExMTExIiwiaWF0IjoxNjk1NDA1MDYyfQ.41Y2fsAm4kAIv061fGjaaDZ-InVdQpaGqbXhcm1Be4o
+            username: 'dua',
+            password: 'password'
         }
     ]
 

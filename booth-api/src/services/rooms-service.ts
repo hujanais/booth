@@ -1,8 +1,8 @@
 import { CreateRoomRequest, RoomModel, UpdateRoomRequest } from "../models/room-model";
 import { v4 as uuidv4 } from 'uuid';
 import _dbFactory from "../db/db-factory";
-import wssService from '../websocket/wss';
 import { UserEnterExitRoomModel } from "../models/ws-models";
+import SocketIo from "../websocket/socket_io";
 
 export class RoomService {
 
@@ -29,7 +29,7 @@ export class RoomService {
 
         _dbFactory.rooms.push(newRoom);
 
-        wssService.notifyRoomAdded(newRoom, _dbFactory.rooms);
+        SocketIo.instance.notifyRoomAdded(newRoom, _dbFactory.rooms);
 
         return newRoom;
     }
@@ -45,7 +45,7 @@ export class RoomService {
             _dbFactory.rooms.splice(idx, 1);
         }
 
-        wssService.notifyRoomRemoved(room, _dbFactory.rooms);
+        SocketIo.instance.notifyRoomRemoved(room, _dbFactory.rooms);
 
         return room;
     }
@@ -58,7 +58,7 @@ export class RoomService {
         foundRoom.title = room.title;
         foundRoom.description = room.description;
 
-        wssService.notifyRoomChanged(foundRoom);
+        SocketIo.instance.notifyRoomChanged(foundRoom);
 
         return foundRoom;
     }
@@ -74,9 +74,6 @@ export class RoomService {
                 return room;
             }
 
-            room.users.push({ id: user.id, username: user.username });
-            wssService.notifyRoomChanged(room);
-
             const notifyUserJoinedPayload: UserEnterExitRoomModel = {
                 user: {
                     id: user.id,
@@ -84,7 +81,10 @@ export class RoomService {
                 },
                 room: { ...room }
             };
-            wssService.notifyUserJoined(notifyUserJoinedPayload);
+            SocketIo.instance.notifyUserJoined(notifyUserJoinedPayload);
+
+            room.users.push({ id: user.id, username: user.username });
+            SocketIo.instance.notifyRoomChanged(room);
         }
 
         return room;
@@ -105,11 +105,10 @@ export class RoomService {
                     },
                     room: { ...room }
                 };
-                wssService.notifyUserLeft(notifyUserLeftPayload);
+                SocketIo.instance.notifyUserLeft(notifyUserLeftPayload);
 
                 room.users.splice(idx, 1);
-                wssService.notifyRoomChanged(room);
-
+                SocketIo.instance.notifyRoomChanged(room);
             }
         }
 

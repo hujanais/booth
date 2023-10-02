@@ -9,11 +9,6 @@ export enum ChangeType {
     UserExited = 'user_exited'      // UserEnterExitRoomModel
 }
 
-export type ChangeModel<T extends RoomChangedModel | RoomUpdatedModel | UserEnterExitRoomModel | MessageChangedModel> = {
-    changeType: ChangeType;
-    data: T;
-}
-
 export type RoomChangedModel = {
     room: RoomModel;
     rooms: RoomModel[];

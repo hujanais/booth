@@ -41,6 +41,11 @@ export class JWTUtility {
     return userId;
   }
 
+  /**
+   * Decodes jwtToken to userId
+   * @param token jwtToken
+   * @returns userId
+   */
   public decodeJWTToken(token: string): string {
     const userId = jwt.verify(token, this.jwtSecretKey) as string;
     if (!userId) {
