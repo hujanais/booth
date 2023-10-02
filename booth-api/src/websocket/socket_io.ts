@@ -6,6 +6,7 @@ import dbFactory from '../db/db-factory';
 import { RoomModel } from '../models/room-model';
 import { RoomChangedModel, ChangeType, RoomUpdatedModel, UserEnterExitRoomModel } from '../models/ws-models';
 import { JWTUtility } from '../utilities/jwt-utility';
+import { UserModel } from '../models/user-model';
 
 const WEBSOCKET_CORS = {
     origin: "*",
@@ -13,7 +14,7 @@ const WEBSOCKET_CORS = {
 }
 
 const connectedUsers: { [key: string]: Socket[] } = {}; // user to socket-channel relationship is 1 to many
-const socketIdLookup: { [key: string]: string } = {};  // reverse lookup of socket-id to associated user.  1 to 1
+const socketIdLookup: { [key: string]: UserModel } = {};  // reverse lookup of socket-id to associated user.  1 to 1
 
 class SocketIo extends Server {
 
@@ -39,11 +40,9 @@ class SocketIo extends Server {
                 console.log('invalid jwtToken');
                 return;
             }
-            console.log('jwtToken = ', jwtToken)
             const userId = SocketIo.jwtUtility.decodeJWTToken(jwtToken);
 
             // if invalid username
-            console.log(dbFactory.users);
             const user = dbFactory.users.find(u => u.id === userId);
             if (!user) {
                 console.log('Invalid username. socket closed');
@@ -52,29 +51,33 @@ class SocketIo extends Server {
                 return;
             }
 
-            console.log('someone joined', socket.id);
+            console.log(`user ${user.username} on ws-channel ${socket.id} has joined`);
             if (!connectedUsers[user.id]) {
                 connectedUsers[user.id] = [socket];
             } else {
                 connectedUsers[user.id].push(socket);
             }
-            socketIdLookup[socket.id] = user.id;
+            socketIdLookup[socket.id] = { id: user.id, username: user.username };
 
+            // when user connects for the first time, sync the system state with client.
+
+            // handle incoming message.  optional
             socket.on('chatmessage', (message: string) => {
                 console.log('chatmessage', message, socket.id);
             })
 
+            // handle socket disconnect.
             socket.on('disconnect', () => {
                 const associatedUser = socketIdLookup[socket.id];
                 delete socketIdLookup[socket.id];
-                const idx = connectedUsers[associatedUser].findIndex(v => v.id === socket.id);
+                const idx = connectedUsers[associatedUser.id].findIndex(v => v.id === socket.id);
                 if (idx >= 0) {
-                    connectedUsers[associatedUser].splice(idx, 1);
-                    if (connectedUsers[associatedUser].length === 0) {
-                        delete connectedUsers[associatedUser];
+                    connectedUsers[associatedUser.id].splice(idx, 1);
+                    if (connectedUsers[associatedUser.id].length === 0) {
+                        delete connectedUsers[associatedUser.id];
                     }
                 }
-                console.log('user disconnected', socket.id);
+                console.log(`user ${associatedUser.username} on ws-channel ${socket.id} has disconnected`);
             })
         });
     }
