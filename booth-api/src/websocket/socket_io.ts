@@ -133,7 +133,7 @@ class SocketIo extends Server {
         const sockets = connectedUsers[model.user.id];
         if (sockets) {
             sockets.forEach(socket => {
-                socket.send(ChangeType.UserEntered, JSON.stringify(payload));
+                socket.emit(ChangeType.UserEntered, JSON.stringify(payload));
             });
         }
     }
@@ -148,7 +148,7 @@ class SocketIo extends Server {
         const sockets = connectedUsers[model.user.id];
         if (sockets) {
             sockets.forEach(socket => {
-                socket.send(ChangeType.UserExited, JSON.stringify(payload));
+                socket.emit(ChangeType.UserExited, JSON.stringify(payload));
             });
         }
     }

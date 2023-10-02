@@ -9,7 +9,7 @@ class DBFactory {
             password: 'password'
         },
         {
-            id: '22222',    // Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IjExMTExIiwiaWF0IjoxNjk1NDA1MDYyfQ.41Y2fsAm4kAIv061fGjaaDZ-InVdQpaGqbXhcm1Be4o
+            id: '22222',    // Bearer eyJhbGciOiJIUzI1NiJ9.MjIyMjI.kjNo4dXKb3qgBlsH65ofofxtqFoNbCacZPIR8bsjhhE
             username: 'dua',
             password: 'password'
         }
