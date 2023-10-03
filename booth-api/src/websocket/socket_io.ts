@@ -7,6 +7,7 @@ import { RoomModel } from '../models/room-model';
 import { RoomChangedModel, ChangeType, RoomUpdatedModel, UserEnterExitRoomModel } from '../models/ws-models';
 import { JWTUtility } from '../utilities/jwt-utility';
 import { UserModel } from '../models/user-model';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 const WEBSOCKET_CORS = {
     origin: "*",
@@ -16,31 +17,26 @@ const WEBSOCKET_CORS = {
 const connectedUsers: { [key: string]: Socket[] } = {}; // user to socket-channel relationship is 1 to many
 const socketIdLookup: { [key: string]: UserModel } = {};  // reverse lookup of socket-id to associated user.  1 to 1
 
-class SocketIo extends Server {
+class SocketIo {
 
-    private static io: SocketIo;
-    private static jwtUtility: JWTUtility;
+    private io: Server | undefined;
+    private jwtUtility: JWTUtility;
 
-    constructor(httpServer: any) {
-        super(httpServer, { cors: WEBSOCKET_CORS })
-        SocketIo.jwtUtility = new JWTUtility(process.env.JWT_SECRET || '');
-    }
-
-    public static get instance(): SocketIo {
-        return SocketIo.io;
+    constructor() {
+        this.jwtUtility = new JWTUtility(process.env.JWT_SECRET || '');
     }
 
     // http://localhost:3001?jwtToken=xxxxxx
-    public static init(httpServer: any) {
-        SocketIo.io = new SocketIo(httpServer);
+    public init(httpServer: any) {
+        this.io = new Server(httpServer, { cors: WEBSOCKET_CORS });
 
-        SocketIo.io.on('connection', (socket) => {
+        this.io.on('connection', (socket) => {
             const jwtToken = socket.handshake.query.jwtToken as string;
             if (!jwtToken) {
                 console.log('invalid jwtToken');
                 return;
             }
-            const userId = SocketIo.jwtUtility.decodeJWTToken(jwtToken);
+            const userId = this.jwtUtility.decodeJWTToken(jwtToken);
 
             // if invalid username
             const user = dbFactory.users.find(u => u.id === userId);
@@ -60,6 +56,7 @@ class SocketIo extends Server {
             socketIdLookup[socket.id] = { id: user.id, username: user.username };
 
             // when user connects for the first time, sync the system state with client.
+            this.sendStateToClient(socket, user);
 
             // handle incoming message.  optional
             socket.on('chatmessage', (message: string) => {
@@ -127,13 +124,8 @@ class SocketIo extends Server {
     }
 
     // only notify registered users
-    public notifyUserJoined(model: UserEnterExitRoomModel): void {
-        const payload: UserEnterExitRoomModel = {
-            user: model.user,
-            room: model.room
-        }
-
-        const sockets = connectedUsers[model.user.id];
+    public notifyUserJoined(payload: UserEnterExitRoomModel): void {
+        const sockets = connectedUsers[payload.user.id];
         if (sockets) {
             sockets.forEach(socket => {
                 socket.emit(ChangeType.UserEntered, JSON.stringify(payload));
@@ -142,19 +134,36 @@ class SocketIo extends Server {
     }
 
     // only notify registered users
-    public notifyUserLeft(model: UserEnterExitRoomModel): void {
-        const payload: UserEnterExitRoomModel = {
-            user: model.user,
-            room: model.room
-        }
-
-        const sockets = connectedUsers[model.user.id];
+    public notifyUserLeft(payload: UserEnterExitRoomModel): void {
+        const sockets = connectedUsers[payload.user.id];
         if (sockets) {
             sockets.forEach(socket => {
                 socket.emit(ChangeType.UserExited, JSON.stringify(payload));
             });
         }
     }
+
+    private sendStateToClient(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>, user: UserModel): void {
+        // check to see if you are already part of a room.
+        const joinedRoom = dbFactory.rooms.find(room => room.users.find(user => user.id === user.id));
+        if (joinedRoom) {
+            console.log(`${user.id} is already part of the room ${joinedRoom.id}`);
+            const userEnterRoomModel: UserEnterExitRoomModel = {
+                user: {
+                    id: user.id,
+                    username: user.username
+                },
+                room: { ...joinedRoom }
+            };
+            socket.emit(ChangeType.UserEntered, JSON.stringify(userEnterRoomModel));
+
+            const roomUpdatedModel: RoomChangedModel = {
+                room: { ...joinedRoom },
+                rooms: [...dbFactory.rooms]
+            };
+            socket.emit(ChangeType.RoomUpdated, JSON.stringify(roomUpdatedModel));
+        }
+    }
 }
 
-export default SocketIo;
+export default new SocketIo();

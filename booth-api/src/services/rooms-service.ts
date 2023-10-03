@@ -2,7 +2,7 @@ import { CreateRoomRequest, RoomModel, UpdateRoomRequest } from "../models/room-
 import { v4 as uuidv4 } from 'uuid';
 import _dbFactory from "../db/db-factory";
 import { UserEnterExitRoomModel } from "../models/ws-models";
-import SocketIo from "../websocket/socket_io";
+import socketIo from "../websocket/socket_io";
 
 export class RoomService {
 
@@ -29,7 +29,7 @@ export class RoomService {
 
         _dbFactory.rooms.push(newRoom);
 
-        SocketIo.instance.notifyRoomAdded(newRoom, _dbFactory.rooms);
+        socketIo.notifyRoomAdded(newRoom, _dbFactory.rooms);
 
         return newRoom;
     }
@@ -45,7 +45,7 @@ export class RoomService {
             _dbFactory.rooms.splice(idx, 1);
         }
 
-        SocketIo.instance.notifyRoomRemoved(room, _dbFactory.rooms);
+        socketIo.notifyRoomRemoved(room, _dbFactory.rooms);
 
         return room;
     }
@@ -58,7 +58,7 @@ export class RoomService {
         foundRoom.title = room.title;
         foundRoom.description = room.description;
 
-        SocketIo.instance.notifyRoomChanged(foundRoom);
+        socketIo.notifyRoomChanged(foundRoom);
 
         return foundRoom;
     }
@@ -81,10 +81,10 @@ export class RoomService {
                 },
                 room: { ...room }
             };
-            SocketIo.instance.notifyUserJoined(notifyUserJoinedPayload);
+            socketIo.notifyUserJoined(notifyUserJoinedPayload);
 
             room.users.push({ id: user.id, username: user.username });
-            SocketIo.instance.notifyRoomChanged(room);
+            socketIo.notifyRoomChanged(room);
         }
 
         return room;
@@ -105,10 +105,10 @@ export class RoomService {
                     },
                     room: { ...room }
                 };
-                SocketIo.instance.notifyUserLeft(notifyUserLeftPayload);
+                socketIo.notifyUserLeft(notifyUserLeftPayload);
 
                 room.users.splice(idx, 1);
-                SocketIo.instance.notifyRoomChanged(room);
+                socketIo.notifyRoomChanged(room);
             }
         }
 
