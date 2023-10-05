@@ -1,7 +1,7 @@
 import { CreateMessageRequest, MessageModel, UpdateMessageRequest } from "../models/message-model";
 import { v4 as uuidv4 } from 'uuid';
 import _dbFactory from "../db/db-factory";
-import wssService from '../websocket/wss';
+import socketIo from "../websocket/socket_io";
 
 export class MessageService {
 
@@ -21,7 +21,9 @@ export class MessageService {
 
         room.messages.push(message);
 
-        // wssService.notifyNewMessage();
+        // get all the users in this room.
+        const targetUserIds: string[] = room.users.map(u => u.id);
+        socketIo.notifyNewMessage(targetUserIds, message);
 
         return message;
     }

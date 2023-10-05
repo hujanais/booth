@@ -13,7 +13,7 @@ export type CreateMessageRequest = {
     message: string;
 }
 
-export type UpdateMessageRequest = { 
+export type UpdateMessageRequest = {
     userId: string;
     messageId: string;
     message: string;

@@ -8,6 +8,7 @@ import { RoomChangedModel, ChangeType, RoomUpdatedModel, UserEnterExitRoomModel 
 import { JWTUtility } from '../utilities/jwt-utility';
 import { UserModel } from '../models/user-model';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
+import { CreateMessageRequest, MessageModel } from '../models/message-model';
 
 const WEBSOCKET_CORS = {
     origin: "*",
@@ -140,6 +141,16 @@ class SocketIo {
             sockets.forEach(socket => {
                 socket.emit(ChangeType.UserExited, JSON.stringify(payload));
             });
+        }
+    }
+
+    // notify joined users with new incoming message.
+    public notifyNewMessage(userIds: string[], payload: MessageModel): void {
+        for (const userId of userIds) {
+            const sockets = connectedUsers[userId];
+            sockets.forEach(socket => {
+                socket.emit(ChangeType.NewMessage, JSON.stringify(payload));
+            })
         }
     }
 
