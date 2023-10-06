@@ -15,14 +15,13 @@ export type LoginResponse = {
 export class BoothApiService {
   private _wss: WebsocketService;
   private _jwtToken: string = '';
-  private loginSubject$ = new Subject<LoginResponse>();
 
   constructor(private http: HttpClient) {
     this._wss = new WebsocketService();
   }
 
-  public get onLogInChanged(): Observable<LoginResponse> {
-    return this.loginSubject$.asObservable();
+  public get wss(): WebsocketService {
+    return this._wss;
   }
 
   // return the jwttoken
@@ -33,10 +32,6 @@ export class BoothApiService {
       tap((jwtToken) => {
         this._wss.connect('ws://localhost:3001', jwtToken);
         this._jwtToken = jwtToken;
-        this.loginSubject$.next({
-          isLoggedIn: true,
-          username: username
-        });
       })
     );
   }

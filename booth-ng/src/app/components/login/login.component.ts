@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { BoothApiService } from 'src/app/services/booth-api.service';
 
 @Component({
@@ -8,10 +9,13 @@ import { BoothApiService } from 'src/app/services/booth-api.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit, OnDestroy {
+  private subscriptions = new Subscription();
+
   loginForm: FormGroup;
   hidePassword = true;
   message: string = '';
+  isConnected = false;
 
   constructor(private fb: FormBuilder, private api: BoothApiService) {
     this.loginForm = this.fb.group({
@@ -20,7 +24,19 @@ export class LoginComponent {
     });
   }
 
-  public login(): void { 
+  ngOnInit(): void {
+    this.subscriptions.add(
+      this.api.wss.isConnected.subscribe((state: boolean) => {
+        this.isConnected = state
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    throw new Error('Method not implemented.');
+  }
+
+  public login(): void {
     const username = this.usernameControl.value;
     const password = this.passwordControl.value;
     this.api.login(username, password).subscribe({
