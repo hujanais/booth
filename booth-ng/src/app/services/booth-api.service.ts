@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core';
 import { Observable, ObservableNotification, Subject, catchError, of, switchMap, tap } from 'rxjs';
 import { CreateRoomRequest, RoomModel } from '../models/room-model';
 import { WebsocketService } from './websocket-service';
-import { ChangeModel, ChangeType } from '../models/ws-models';
 
 export type LoginResponse = {
   isLoggedIn: boolean;
@@ -20,10 +19,6 @@ export class BoothApiService {
 
   constructor(private http: HttpClient) {
     this._wss = new WebsocketService();
-  }
-
-  public get onChanged(): Observable<ChangeModel<any>> {
-    return this._wss.onChanged;
   }
 
   public get onLogInChanged(): Observable<LoginResponse> {

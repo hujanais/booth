@@ -1,28 +1,84 @@
-import { WebSocketSubject, webSocket } from 'rxjs/webSocket';
-import { ChangeModel } from '../models/ws-models';
+import { Socket, io } from 'socket.io-client';
+import { DefaultEventsMap } from '@socket.io/component-emitter';
+import { ChangeType, MessageChangedModel, RoomChangedModel, RoomUpdatedModel, UserEnterExitRoomModel } from '../models/ws-models';
 import { Observable, Subject } from 'rxjs';
 
 export class WebsocketService {
-    private _webSocket$: WebSocketSubject<ChangeModel<any>> | undefined;
-    private changed$: Subject<ChangeModel<any>> = new Subject<ChangeModel<any>>();
-
-    public get onChanged(): Observable<ChangeModel<any>> {
-        return this.changed$.asObservable();
-    }
+    private socket: Socket<DefaultEventsMap, DefaultEventsMap> | undefined;
+    private isConnected$: Subject<boolean> = new Subject<boolean>();
+    private roomAdded$: Subject<RoomChangedModel> = new Subject<RoomChangedModel>();
+    private roomDeleted$: Subject<RoomChangedModel> = new Subject<RoomChangedModel>();
+    private roomUpdated$: Subject<RoomUpdatedModel> = new Subject<RoomUpdatedModel>();
+    private userEntered$: Subject<UserEnterExitRoomModel> = new Subject<UserEnterExitRoomModel>();
+    private userExited$: Subject<UserEnterExitRoomModel> = new Subject<UserEnterExitRoomModel>();
+    private newMessage$: Subject<MessageChangedModel> = new Subject<MessageChangedModel>();
 
     public connect(url: string, jwtToken: string) {
-        this._webSocket$ = webSocket<ChangeModel<any>>(`${url}?jwtToken=${jwtToken}`);
+        this.socket = io(`http://localhost:3001?jwtToken=${jwtToken}`);
 
-        this._webSocket$.subscribe({
-            next: (payload: ChangeModel<any>) => {
-                console.log('### ws -', JSON.stringify(payload));
-                this.changed$.next(payload);
-            },
-            error: (err) => { }
+        this.socket.on("connect", () => {
+            this.isConnected$.next(true);
         });
+
+        this.socket.on('disconnect', () => {
+            this.isConnected$.next(false);
+        })
+
+        this.socket.on(ChangeType.RoomAdded, (payload: RoomChangedModel) => {
+            this.roomAdded$.next(payload);
+        });
+
+        this.socket.on(ChangeType.RoomDeleted, (payload: RoomChangedModel) => {
+            this.roomDeleted$.next(payload);
+        });
+
+        this.socket.on(ChangeType.RoomUpdated, (payload: RoomUpdatedModel) => {
+            this.roomUpdated$.next(payload);
+        });
+
+        this.socket.on(ChangeType.UserEntered, (payload: UserEnterExitRoomModel) => {
+            this.userEntered$.next(payload);
+        });
+
+        this.socket.on(ChangeType.UserExited, (payload: UserEnterExitRoomModel) => {
+            this.userExited$.next(payload);
+        });
+
+        this.socket.on(ChangeType.NewMessage, (payload: MessageChangedModel) => {
+            this.newMessage$.next(payload);
+        });
+
+    }
+
+    public get isConnected(): Observable<boolean> {
+        return this.isConnected$.asObservable();
+    }
+
+    public get roomAdded(): Observable<RoomChangedModel> {
+        return this.roomAdded$.asObservable();
+    }
+
+    public get roomDeleted(): Observable<RoomChangedModel> {
+        return this.roomDeleted$.asObservable();
+    }
+
+    public get roomUpdated(): Observable<RoomUpdatedModel> {
+        return this.roomUpdated$.asObservable();
+    }
+
+    public get userEntered(): Observable<RoomUpdatedModel> {
+        return this.userEntered$.asObservable();
+    }
+
+    public get userExited(): Observable<RoomUpdatedModel> {
+        return this.userExited$.asObservable();
+    }
+
+    public get newMessage(): Observable<MessageChangedModel> {
+        return this.newMessage$.asObservable();
     }
 
     public close(): void {
-        this._webSocket$?.complete();
+        this.socket?.close();
     }
 }

@@ -1,8 +1,11 @@
+import { UserModel } from "./user-model";
+
 export type MessageModel = {
     id: string;
-    ownerId: string;
+    owner: UserModel;
     roomId: string;
     message: string;
+    timestamp: number;
 }
 
 export type CreateMessageRequest = {
@@ -10,7 +13,7 @@ export type CreateMessageRequest = {
     message: string;
 }
 
-export type UpdateMessageRequest = { 
+export type UpdateMessageRequest = {
     userId: string;
     messageId: string;
     message: string;

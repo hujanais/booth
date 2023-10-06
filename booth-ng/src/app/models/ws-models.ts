@@ -3,15 +3,11 @@ import { UserModel } from "./user-model";
 
 export enum ChangeType {
     RoomAdded = 'room_added',       // RoomChangedModel
-    RoomDeleted = 'room_deleted',   // RoomChangedModel
-    RoomUpdated = 'room updated',   // RoomUpdatedModel
+    RoomDeleted = 'room_deleted',   // RoomChangedModel 
+    RoomUpdated = 'room_updated',   // RoomUpdatedModel
     UserEntered = 'user_entered',   // UserEnterExitRoomModel
-    UserExited = 'user_exited'      // UserEnterExitRoomModel
-}
-
-export type ChangeModel<T extends RoomChangedModel | RoomUpdatedModel | UserEnterExitRoomModel | MessageChangedModel> = {
-    changeType: ChangeType;
-    data: T;
+    UserExited = 'user_exited',     // UserEnterExitRoomModel
+    NewMessage = 'new_message',     // MessageModel
 }
 
 export type RoomChangedModel = {
