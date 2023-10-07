@@ -13,10 +13,10 @@ const roomService = new RoomService();
 // Join a room.  POST /api/room/join/:roomId
 router.post('/room/join/:roomId', async (req: Request, res: Response) => {
     const roomId = req.params.roomId;
-    const userId = res.locals.userId;
+    const sessionId = res.locals.sessionId;
 
     try {
-        const resp = await roomService.joinRoom(userId, roomId);
+        const resp = await roomService.joinRoom(sessionId, roomId);
         res.json(resp);
     } catch (err: any) {
         res.status(500).send(err.message);
@@ -26,10 +26,10 @@ router.post('/room/join/:roomId', async (req: Request, res: Response) => {
 // exit a room. DELETE /api/room/join/:roomId
 router.delete('/room/join/:roomId', async (req: Request, res: Response) => {
     const roomId = req.params.roomId;
-    const userId = res.locals.userId;
+    const sessionId = res.locals.sessionId;
 
     try {
-        const resp = await roomService.exitRoom(userId, roomId);
+        const resp = await roomService.exitRoom(sessionId, roomId);
         res.json(resp);
     } catch (err: any) {
         res.status(500).send(err.message);
@@ -39,12 +39,12 @@ router.delete('/room/join/:roomId', async (req: Request, res: Response) => {
 // Create a new room. POST /api/room
 router.post('/room', async (req: Request, res: Response) => {
     const { body } = req;
-    const userId = res.locals.userId;
+    const sessionId = res.locals.sessionId;
 
     const payload = body as CreateRoomRequest;
 
     try {
-        const resp = await roomService.createRoom(userId, payload);
+        const resp = await roomService.createRoom(sessionId, payload);
         res.json(resp);
     } catch (err: any) {
         res.status(500).send(err.message);
@@ -64,12 +64,12 @@ router.get('/rooms', async (req: Request, res: Response) => {
 // update the room. PUT /api/room --body UpdateRoomRequest
 router.put('/room', async (req: Request, res: Response) => {
     const { body } = req;
-    const userId = res.locals.userId;
+    const sessionId = res.locals.sessionId;
 
     const updateRoom = body as UpdateRoomRequest;
 
     try {
-        const resp = await roomService.updateRoom(userId, updateRoom);
+        const resp = await roomService.updateRoom(sessionId, updateRoom);
         res.json(resp);
     } catch (err: any) {
         res.status(500).send(err.message);
@@ -78,10 +78,10 @@ router.put('/room', async (req: Request, res: Response) => {
 
 // Delete a room. DELETE /api/room/roomId
 router.delete('/room/:roomId', async (req: Request, res: Response) => {
-    const userId = res.locals.userId;
+    const sessionId = res.locals.sessionId;
     try {
         const roomId = req.params.roomId;
-        const room = await roomService.deleteRoom(userId, roomId);
+        const room = await roomService.deleteRoom(sessionId, roomId);
         res.json(room);
     } catch (err: any) {
         res.status(500).send(err.message);

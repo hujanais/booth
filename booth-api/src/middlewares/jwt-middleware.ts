@@ -14,8 +14,8 @@ export const jwtHandler = (req: Request, res: Response, next: NextFunction) => {
     const bearerToken = req.headers.authorization;
 
     try {
-        const userId = jwtUtility.verifyJWTToken(bearerToken);
-        res.locals = { ...res.locals, userId: userId };
+        const sessionId = jwtUtility.verifyJWTToken(bearerToken);
+        res.locals = { ...res.locals, sessionId };
         next();
     } catch (err: any) {
         res.status(401).send(err.message);

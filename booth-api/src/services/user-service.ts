@@ -9,12 +9,12 @@ export class UserService {
 
     public register(payload: LoginUserRequest): void {
         // check if user already registered.
-        const user = dbFactory.users.find(u => u.username === payload.username);
+        const user = dbFactory.getUserByName(payload.username);
         if (user) {
             throw new Error(`The user ${payload.username} already exists`);
         }
 
-        dbFactory.users.push({
+        dbFactory.addUser({
             id: uuidv4(),
             username: payload.username,
             password: payload.password
@@ -22,17 +22,19 @@ export class UserService {
     }
 
     public getAllUsers(): InternalUserModel[] {
-        return dbFactory.users;
+        return dbFactory.getAllUsers();
     }
 
     // returns the bearer token
     public login(payload: LoginUserRequest): string {
-        const user = dbFactory.users.find(u => u.username === payload.username && u.password === payload.password);
-        if (!user) {
+        const user = dbFactory.getUserByName(payload.username);
+        if (!user || user.password === payload.password) {
             throw new Error(`${payload.username} is not found or invalid password`);
         }
 
-        return this._jwtUtility.signToken(user.id);
+        const sessionId = uuidv4();
+        dbFactory.addSession(sessionId, { user: { ...user }, socket: undefined });
+        return this._jwtUtility.signToken(sessionId);
     }
 
     public logout() {

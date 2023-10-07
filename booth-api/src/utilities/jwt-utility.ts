@@ -10,17 +10,17 @@ export class JWTUtility {
 
   /**
    * Return the encrypted data.
-   * @param userId The value to encrypt
+   * @param sessionId The value to encrypt
    */
-  public signToken(userId: string): string {
-    const token = jwt.sign(userId, this.jwtSecretKey);
+  public signToken(sessionId: string): string {
+    const token = jwt.sign(sessionId, this.jwtSecretKey);
     return token;
   }
 
   /**
    * Verify token middleware.
    * @param bearerToken 'Bearer XXXXX'
-   * @ returns userId
+   * @ returns sessionId
    */
   public verifyJWTToken(bearerToken: string | undefined): string {
     if (!bearerToken) {
@@ -33,24 +33,24 @@ export class JWTUtility {
     }
 
     const token = tokens[1]
-    const userId = jwt.verify(token, this.jwtSecretKey) as string;
-    if (!userId) {
+    const sessionId = jwt.verify(token, this.jwtSecretKey) as string;
+    if (!sessionId) {
       throw new Error('unauthorized request-3');
     }
 
-    return userId;
+    return sessionId;
   }
 
   /**
-   * Decodes jwtToken to userId
+   * Decodes jwtToken to sessionId
    * @param token jwtToken
-   * @returns userId
+   * @returns sessionId
    */
   public decodeJWTToken(token: string): string {
-    const userId = jwt.verify(token, this.jwtSecretKey) as string;
-    if (!userId) {
+    const sessionId = jwt.verify(token, this.jwtSecretKey) as string;
+    if (!sessionId) {
       throw new Error('unauthorized request-3');
     }
-    return userId;
+    return sessionId;
   }
 }
