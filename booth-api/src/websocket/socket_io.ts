@@ -90,7 +90,7 @@ class SocketIo {
         for (const clientKey in connectedUsers) {
             const socketChannels = connectedUsers[clientKey];
             socketChannels.forEach(socketChannel => {
-                socketChannel.emit(ChangeType.RoomAdded, JSON.stringify(payload));
+                socketChannel.emit(ChangeType.RoomAdded, payload);
             });
         }
     }
@@ -105,7 +105,7 @@ class SocketIo {
         for (const clientKey in connectedUsers) {
             const socketChannels = connectedUsers[clientKey];
             socketChannels.forEach(socketChannel => {
-                socketChannel.emit(ChangeType.RoomDeleted, JSON.stringify(payload));
+                socketChannel.emit(ChangeType.RoomDeleted, payload);
             });
         }
     }
@@ -119,7 +119,7 @@ class SocketIo {
         for (const clientKey in connectedUsers) {
             const socketChannels = connectedUsers[clientKey];
             socketChannels.forEach(socketChannel => {
-                socketChannel.emit(ChangeType.RoomUpdated, JSON.stringify(payload));
+                socketChannel.emit(ChangeType.RoomUpdated, payload);
             });
         }
     }
@@ -129,7 +129,7 @@ class SocketIo {
         const sockets = connectedUsers[payload.user.id];
         if (sockets) {
             sockets.forEach(socket => {
-                socket.emit(ChangeType.UserEntered, JSON.stringify(payload));
+                socket.emit(ChangeType.UserEntered, payload);
             });
         }
     }
@@ -139,7 +139,7 @@ class SocketIo {
         const sockets = connectedUsers[payload.user.id];
         if (sockets) {
             sockets.forEach(socket => {
-                socket.emit(ChangeType.UserExited, JSON.stringify(payload));
+                socket.emit(ChangeType.UserExited, payload);
             });
         }
     }
@@ -148,8 +148,12 @@ class SocketIo {
     public notifyNewMessage(userIds: string[], payload: MessageModel): void {
         for (const userId of userIds) {
             const sockets = connectedUsers[userId];
+            if (!sockets) {
+                console.log(`notifyNewMessage failed because ${userId} is not connected`);
+                return;
+            }
             sockets.forEach(socket => {
-                socket.emit(ChangeType.NewMessage, JSON.stringify(payload));
+                socket.emit(ChangeType.NewMessage, payload);
             })
         }
     }
