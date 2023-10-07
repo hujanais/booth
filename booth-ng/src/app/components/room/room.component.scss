@@ -12,8 +12,9 @@
         padding: 5px;
     }
 
-    .div-messages { 
+    .div-messages {
         display: flex;
+        flex-direction: column;
         overflow-y: scroll;
         border: 1px solid green;
         padding: 5px;

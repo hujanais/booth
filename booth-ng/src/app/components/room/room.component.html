@@ -17,7 +17,11 @@
         </div>
     </ng-template>
 
-    <div class='div-messages'>body</div>
+    <div class='div-messages'>
+        <div *ngFor="let msg of messages">
+            <div>{{msg}}</div>
+        </div>
+    </div>
     <div class="div-send-message">
         <form [formGroup]="form">
             <mat-form-field>

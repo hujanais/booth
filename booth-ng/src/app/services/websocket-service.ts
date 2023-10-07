@@ -2,6 +2,7 @@ import { Socket, io } from 'socket.io-client';
 import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { ChangeType, MessageChangedModel, RoomChangedModel, RoomUpdatedModel, UserEnterExitRoomModel } from '../models/ws-models';
 import { Observable, Subject } from 'rxjs';
+import { MessageModel } from '../models/message-model';
 
 export class WebsocketService {
     private socket: Socket<DefaultEventsMap, DefaultEventsMap> | undefined;
@@ -11,7 +12,7 @@ export class WebsocketService {
     private roomUpdated$: Subject<RoomUpdatedModel> = new Subject<RoomUpdatedModel>();
     private userEntered$: Subject<UserEnterExitRoomModel> = new Subject<UserEnterExitRoomModel>();
     private userExited$: Subject<UserEnterExitRoomModel> = new Subject<UserEnterExitRoomModel>();
-    private newMessage$: Subject<MessageChangedModel> = new Subject<MessageChangedModel>();
+    private newMessage$: Subject<MessageModel> = new Subject<MessageModel>();
 
     public connect(url: string, jwtToken: string) {
         this.socket = io(`http://localhost:3001?jwtToken=${jwtToken}`);
@@ -44,7 +45,7 @@ export class WebsocketService {
             this.userExited$.next(payload);
         });
 
-        this.socket.on(ChangeType.NewMessage, (payload: MessageChangedModel) => {
+        this.socket.on(ChangeType.NewMessage, (payload: MessageModel) => {
             this.newMessage$.next(payload);
         });
 
@@ -66,15 +67,15 @@ export class WebsocketService {
         return this.roomUpdated$.asObservable();
     }
 
-    public get userEntered(): Observable<RoomUpdatedModel> {
+    public get userEntered(): Observable<UserEnterExitRoomModel> {
         return this.userEntered$.asObservable();
     }
 
-    public get userExited(): Observable<RoomUpdatedModel> {
+    public get userExited(): Observable<UserEnterExitRoomModel> {
         return this.userExited$.asObservable();
     }
 
-    public get newMessage(): Observable<MessageChangedModel> {
+    public get newMessage(): Observable<MessageModel> {
         return this.newMessage$.asObservable();
     }
 
