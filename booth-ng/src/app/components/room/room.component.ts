@@ -21,7 +21,7 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   public roomTitle: string = '';
   public roomDescription: string = '';
-  public messages: string[] = ['A', 'B', 'C'];
+  public messages: string[] = [];
 
   public message = '';
 
@@ -32,27 +32,15 @@ export class RoomComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-
-    this.subscriptions.add(this.api.wss.userEntered.subscribe((resp: UserEnterExitRoomModel) => {
-      this.currentRoom = { ...resp.room };
-      this.messages.push(`${resp.user.username} has joined`);
-    }));
-
-    this.subscriptions.add(this.api.wss.userExited.subscribe((resp: UserEnterExitRoomModel) => {
-      this.currentRoom = undefined;
-      this.messages.length = 0;
-    }));
-
     this.subscriptions.add(this.api.wss.roomUpdated.subscribe((resp: RoomUpdatedModel) => {
-      if (this.currentRoom) {
+      if (!this.currentRoom) {
+        this.currentRoom = { ...resp.room };
+      }
+      else {
         this.currentRoom.title = resp.room.title;
         this.currentRoom.description = resp.room.description;
         this.currentRoom.users = [...resp.room.users];
       }
-    }));
-
-    this.subscriptions.add(this.api.wss.newMessage.subscribe((resp: MessageModel) => {
-      this.messages.push(`${resp.owner.username}: ${resp.message}`);
     }));
   }
 
@@ -70,6 +58,7 @@ export class RoomComponent implements OnInit, OnDestroy {
       {
         next: () => {
           console.log('### exited room');
+          this.currentRoom = undefined;
         },
         error: (err: HttpErrorResponse) => {
           console.log('### doExitRoom failed', `${err.status}. ${err.statusText}`);

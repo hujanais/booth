@@ -36,19 +36,6 @@ export class WebsocketService {
         this.socket.on(ChangeType.RoomUpdated, (payload: RoomUpdatedModel) => {
             this.roomUpdated$.next(payload);
         });
-
-        this.socket.on(ChangeType.UserEntered, (payload: UserEnterExitRoomModel) => {
-            this.userEntered$.next(payload);
-        });
-
-        this.socket.on(ChangeType.UserExited, (payload: UserEnterExitRoomModel) => {
-            this.userExited$.next(payload);
-        });
-
-        this.socket.on(ChangeType.NewMessage, (payload: MessageModel) => {
-            this.newMessage$.next(payload);
-        });
-
     }
 
     public get isConnected(): Observable<boolean> {
@@ -65,18 +52,6 @@ export class WebsocketService {
 
     public get roomUpdated(): Observable<RoomUpdatedModel> {
         return this.roomUpdated$.asObservable();
-    }
-
-    public get userEntered(): Observable<UserEnterExitRoomModel> {
-        return this.userEntered$.asObservable();
-    }
-
-    public get userExited(): Observable<UserEnterExitRoomModel> {
-        return this.userExited$.asObservable();
-    }
-
-    public get newMessage(): Observable<MessageModel> {
-        return this.newMessage$.asObservable();
     }
 
     public close(): void {

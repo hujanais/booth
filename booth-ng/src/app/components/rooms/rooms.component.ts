@@ -91,10 +91,6 @@ export class RoomsComponent implements OnDestroy {
     this.api.deleteRoom(roomId).subscribe(
       {
         next: (room: RoomModel) => {
-          // const idx = this.rooms.findIndex(r => r.id === room.id);
-          // if (idx >= 0) {
-          //   this.rooms.splice(idx, 1);
-          // }
         },
         error: (err: HttpErrorResponse) => {
           this.message = `${err.status}. ${err.statusText}`;

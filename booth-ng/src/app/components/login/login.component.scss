@@ -1,6 +1,17 @@
-.div-login-container { 
+.div-login-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+
+    form {
+        width: 100%;
+    }
+}
+
+.div-login-container-content {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     column-gap: 5px;
 }
