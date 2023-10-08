@@ -64,6 +64,17 @@ class DBFactory {
         return null;
     }
 
+    public getSessionsByUserId(userIds: string[]): Session[] {
+        const sessions: Session[] = [];
+        for (const [key, session] of this._sessions) {
+            if (userIds.includes(session.user.id)) {
+                sessions.push(session);
+            }
+        }
+
+        return sessions;
+    }
+
     public deleteSessionById(sessionId: string): void {
         this._sessions.delete(sessionId);
     }

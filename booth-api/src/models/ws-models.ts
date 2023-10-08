@@ -24,13 +24,3 @@ export type RoomChangedModel = {
 export type RoomUpdatedModel = {
     room: RoomModel;
 }
-
-// export type UserEnterExitRoomModel = {
-//     user: UserModel;
-//     room: RoomModel;
-// }
-
-// export type MessageChangedModel = {
-//     roomId: string;
-//     messageId: string;
-// }

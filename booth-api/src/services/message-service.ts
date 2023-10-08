@@ -21,10 +21,7 @@ export class MessageService {
         }
 
         room.messages.push(message);
-
-        // get all the users in this room.
-        const targetUserIds: string[] = room.users.map(u => u.id);
-        socketIo.notifyRoomChanged(room);
+        socketIo.notifyNewMessage(room);
 
         return message;
     }

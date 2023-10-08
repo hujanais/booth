@@ -27,7 +27,6 @@ export class RoomService {
         };
 
         dbFactory.rooms.push(newRoom);
-
         socketIo.notifyRoomAdded(newRoom, dbFactory.rooms);
 
         return newRoom;
@@ -60,6 +59,7 @@ export class RoomService {
         foundRoom.description = room.description;
 
         socketIo.notifyRoomChanged(foundRoom);
+        socketIo.notifyNewMessage(foundRoom);
 
         return foundRoom;
     }
@@ -85,7 +85,9 @@ export class RoomService {
                 message: `${user.username} has joined.`,
                 timestamp: Date.now().valueOf()
             });
+
             socketIo.notifyRoomChanged(room);
+            socketIo.notifyNewMessage(room);
         }
 
         return room;
@@ -100,8 +102,21 @@ export class RoomService {
 
         const idx = room.users.findIndex(u => u.id === user.id);
         if (idx >= 0) {
+            room.messages.push({
+                id: uuidv4(),
+                owner: {
+                    id: user.id,
+                    username: user.username
+                },
+                roomId: room.id!,
+                message: `${user.username} has exited.`,
+                timestamp: Date.now().valueOf()
+            });
+
             room.users.splice(idx, 1);
             socketIo.notifyRoomChanged(room);
+            socketIo.notifyNewMessage(room);
+
         }
 
         return room;

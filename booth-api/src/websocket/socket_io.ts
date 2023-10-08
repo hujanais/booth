@@ -6,7 +6,6 @@ import dbFactory from '../db/db-factory';
 import { RoomModel } from '../models/room-model';
 import { RoomChangedModel, ChangeType, RoomUpdatedModel, Session } from '../models/ws-models';
 import { JWTUtility } from '../utilities/jwt-utility';
-import { UserModel } from '../models/user-model';
 
 const WEBSOCKET_CORS = {
     origin: "*",
@@ -103,6 +102,18 @@ class SocketIo {
         };
 
         for (const session of dbFactory.getAllSessions()) {
+            session.socket?.emit(ChangeType.RoomUpdated, payload);
+        }
+    }
+
+    public notifyNewMessage(room: RoomModel): void {
+        const payload: RoomUpdatedModel = {
+            room: { ...room }
+        };
+
+        const userIds = room.users.map(u => u.id);
+        const sessions = dbFactory.getSessionsByUserId(userIds);
+        for (const session of sessions) {
             session.socket?.emit(ChangeType.RoomUpdated, payload);
         }
     }
