@@ -9,9 +9,9 @@ export class RoomService {
         return dbFactory.rooms;
     }
 
-    public async createRoom(userId: string, payload: CreateRoomRequest): Promise<RoomModel> {
+    public async createRoom(sessionId: string, payload: CreateRoomRequest): Promise<RoomModel> {
 
-        const user = dbFactory.getUserById(userId);
+        const user = dbFactory.getUserBySessionId(sessionId);
         if (!user) throw new Error('Sorry invalid userId');
 
         const newRoom: RoomModel = {
@@ -33,11 +33,12 @@ export class RoomService {
         return newRoom;
     }
 
-    public async deleteRoom(userId: string, roomId: string): Promise<RoomModel> {
+    public async deleteRoom(sessionId: string, roomId: string): Promise<RoomModel> {
         const room = dbFactory.rooms.find(r => r.id === roomId);
         if (!room) throw new Error(`The room ${roomId} is not found`);
 
-        if (room.owner.id !== userId) throw new Error('Cannot delete a room that you are not the owner');
+        const session = dbFactory.getSessionById(sessionId);
+        if (room.owner.id !== session?.user.id) throw new Error('Cannot delete a room that you are not the owner');
 
         const idx = dbFactory.rooms.findIndex(r => r.id === roomId);
         if (idx >= 0) {
@@ -49,10 +50,11 @@ export class RoomService {
         return room;
     }
 
-    public async updateRoom(userId: string, room: UpdateRoomRequest): Promise<RoomModel> {
+    public async updateRoom(sessionId: string, room: UpdateRoomRequest): Promise<RoomModel> {
         const foundRoom = dbFactory.rooms.find(r => r.id === room.roomId);
+        const user = dbFactory.getUserBySessionId(sessionId);
         if (!foundRoom) throw new Error(`The room ${room.roomId} is not found`);
-        if (foundRoom.owner.id !== userId) throw new Error('Cannot update a room that you are not the owner');
+        if (foundRoom.owner.id !== user?.id) throw new Error('Cannot update a room that you are not the owner');
 
         foundRoom.title = room.title;
         foundRoom.description = room.description;
@@ -62,11 +64,11 @@ export class RoomService {
         return foundRoom;
     }
 
-    public async joinRoom(userId: string, roomId: string): Promise<RoomModel> {
+    public async joinRoom(sessionId: string, roomId: string): Promise<RoomModel> {
         const room = dbFactory.rooms.find(r => r.id === roomId);
         if (!room) throw new Error(`The room ${roomId} is not found`);
 
-        const user = dbFactory.getUserById(userId);
+        const user = dbFactory.getUserBySessionId(sessionId);
         if (user) {
             if (room.users.find(p => p.id === user.id)) {
                 // user already in the room.
@@ -79,17 +81,16 @@ export class RoomService {
         return room;
     }
 
-    public async exitRoom(userId: string, roomId: string): Promise<RoomModel> {
+    public async exitRoom(sessionId: string, roomId: string): Promise<RoomModel> {
         const room = dbFactory.rooms.find(r => r.id === roomId);
         if (!room) throw new Error(`The room ${roomId} is not found`);
 
-        const idx = room.users.findIndex(user => user.id === userId);
+        const user = dbFactory.getUserBySessionId(sessionId);
+
+        const idx = room.users.findIndex(user => user.id === user.id);
         if (idx >= 0) {
-            const user = dbFactory.getUserById(userId);
-            if (user) {
-                room.users.splice(idx, 1);
-                socketIo.notifyRoomChanged(room);
-            }
+            room.users.splice(idx, 1);
+            socketIo.notifyRoomChanged(room);
         }
 
         return room;

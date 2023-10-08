@@ -25,8 +25,13 @@ class DBFactory {
         return this._users;
     }
 
-    public getUserById(id: string): InternalUserModel | undefined {
-        return this._users.find(u => u.id === id);
+    public getUserBySessionId(id: string): InternalUserModel | undefined {
+        const session = this.getSessionById(id);
+        if (session) {
+            return this._users.find(u => u.id === session.user.id);
+        }
+
+        return undefined;
     }
 
     public getUserByName(username: string): InternalUserModel | undefined {
@@ -39,9 +44,6 @@ class DBFactory {
 
     // // key - sessionId. sessionId to {user, socket} relationship is 1 to 1.
     private _sessions: Map<string, Session> = new Map<string, Session>(); // sessionId to {user, socket} relationship is 1 to 1.
-    // public get sessions(): Map<string, Session> {
-    //     return this._sessions;
-    // }
 
     public addSession(sessionId: string, value: Session): void {
         this._sessions.set(sessionId, value);

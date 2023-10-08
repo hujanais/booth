@@ -33,7 +33,15 @@ class SocketIo {
                 return;
             }
             const sessionId = this.jwtUtility.decodeJWTToken(jwtToken);
-            const user = dbFactory.getSessionById(sessionId)?.user;
+            const session = dbFactory.getSessionById(sessionId);
+            if (!session) {
+                console.log('Invalid session. socket closed');
+                socket.emit('error', 'Invalid session.');
+                socket.disconnect();
+                return;
+            }
+
+            const user = session.user;
 
             // if invalid username
             if (!user) {
@@ -44,6 +52,8 @@ class SocketIo {
             }
 
             console.log(`user ${user.username} on ws-channel ${socket.id} has joined`);
+
+            session.socket = socket;
 
             // handle incoming message.  optional
             socket.on('chatmessage', (message: string) => {
@@ -82,7 +92,7 @@ class SocketIo {
         };
 
         for (const session of dbFactory.getAllSessions()) {
-            session.socket?.emit(ChangeType.RoomAdded, payload);
+            session.socket?.emit(ChangeType.RoomDeleted, payload);
         }
     }
 
@@ -93,7 +103,7 @@ class SocketIo {
         };
 
         for (const session of dbFactory.getAllSessions()) {
-            session.socket?.emit(ChangeType.RoomAdded, payload);
+            session.socket?.emit(ChangeType.RoomUpdated, payload);
         }
     }
 

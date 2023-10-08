@@ -28,7 +28,8 @@ export class UserService {
     // returns the bearer token
     public login(payload: LoginUserRequest): string {
         const user = dbFactory.getUserByName(payload.username);
-        if (!user || user.password === payload.password) {
+        console.log(user?.password, payload.password);
+        if (!user || (user.password !== payload.password)) {
             throw new Error(`${payload.username} is not found or invalid password`);
         }
 
