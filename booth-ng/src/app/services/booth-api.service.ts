@@ -16,6 +16,7 @@ export type LoginResponse = {
 export class BoothApiService {
   private _wss: WebsocketService;
   private _jwtToken: string = '';
+  private joinRoom$: Subject<RoomModel> = new Subject<RoomModel>();
 
   constructor(private http: HttpClient) {
     this._wss = new WebsocketService();
@@ -23,6 +24,10 @@ export class BoothApiService {
 
   public get wss(): WebsocketService {
     return this._wss;
+  }
+
+  public get onRoomJoined(): Observable<RoomModel> {
+    return this.joinRoom$.asObservable();
   }
 
   // return the jwttoken
@@ -50,7 +55,11 @@ export class BoothApiService {
   }
 
   public joinRoom(roomId: string): Observable<RoomModel> {
-    return this.http.post<RoomModel>(`/api/room/join/${roomId}`, null, { headers: this.headers });
+    return this.http.post<RoomModel>(`/api/room/join/${roomId}`, null, { headers: this.headers }).pipe(
+      tap((resp: RoomModel) => {
+        this.joinRoom$.next(resp);
+      }),
+    );
   }
 
   public exitRoom(roomId: string): Observable<RoomModel> {

@@ -5,9 +5,7 @@ export enum ChangeType {
     RoomAdded = 'room_added',       // RoomChangedModel
     RoomDeleted = 'room_deleted',   // RoomChangedModel 
     RoomUpdated = 'room_updated',   // RoomUpdatedModel
-    UserEntered = 'user_entered',   // UserEnterExitRoomModel
-    UserExited = 'user_exited',     // UserEnterExitRoomModel
-    NewMessage = 'new_message',     // MessageModel
+    NewMessage = 'room_message'     // RoomUpdatedModel
 }
 
 export type RoomChangedModel = {
