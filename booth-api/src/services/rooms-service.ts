@@ -75,6 +75,16 @@ export class RoomService {
                 return room;
             }
             room.users.push({ id: user.id, username: user.username });
+            room.messages.push({
+                id: uuidv4(),
+                owner: {
+                    id: user.id,
+                    username: user.username
+                },
+                roomId: room.id!,
+                message: `${user.username} has joined.`,
+                timestamp: Date.now().valueOf()
+            });
             socketIo.notifyRoomChanged(room);
         }
 
@@ -86,8 +96,9 @@ export class RoomService {
         if (!room) throw new Error(`The room ${roomId} is not found`);
 
         const user = dbFactory.getUserBySessionId(sessionId);
+        if (!user) throw new Error('exitRoom failed because session is not found');
 
-        const idx = room.users.findIndex(user => user.id === user.id);
+        const idx = room.users.findIndex(u => u.id === user.id);
         if (idx >= 0) {
             room.users.splice(idx, 1);
             socketIo.notifyRoomChanged(room);

@@ -13,11 +13,11 @@ const messageService = new MessageService();
 // Create a new room. POST /api/message
 router.post('/message', async (req: Request, res: Response) => {
     const { body } = req;
-    const { userId } = res.locals;
+    const sessionId = res.locals.sessionId;
     const payload = body as CreateMessageRequest;
 
     try {
-        const resp = await messageService.postMessage(userId, payload);
+        const resp = await messageService.postMessage(sessionId, payload);
         res.json(resp);
     } catch (err: any) {
         res.status(500).send(err.message);
