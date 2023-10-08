@@ -18,16 +18,17 @@
     </ng-template>
 
     <div class='div-messages'>
-        <div *ngFor="let msg of messages">
-            <div>{{msg}}</div>
+        <div *ngFor="let msg of currentRoom?.messages">
+            <div>{{msg.timestamp}} {{msg.owner.username}} {{msg.message}}</div>
         </div>
     </div>
     <div class="div-send-message">
-        <form [formGroup]="form">
-            <mat-form-field>
-                <mat-label>New Message</mat-label>
-                <input matInput formControlName="chat" required>
-            </mat-form-field>
-        </form>
+        <mat-form-field>
+            <mat-label>New Message</mat-label>
+            <input matInput [(ngModel)]="newMessage">
+            <button mat-icon-button matSuffix (click)="sendMessage()" [attr.aria-label]="'send mesage'">
+                <mat-icon>send</mat-icon>
+            </button>
+        </mat-form-field>
     </div>
 </div>

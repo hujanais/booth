@@ -9,7 +9,7 @@ import { AngularMaterialModule } from './angular-material.module';
 import { LoginComponent } from './components/login/login.component';
 import { RoomsComponent } from './components/rooms/rooms.component';
 import { CreateRoomComponent } from './components/create-room/create-room.component';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input'
@@ -34,7 +34,8 @@ import { ChatBubbleComponent } from './components/chat-bubble/chat-bubble.compon
     ReactiveFormsModule,
     MatFormFieldModule,
     MatIconModule,
-    MatInputModule
+    MatInputModule,
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

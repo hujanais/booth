@@ -16,20 +16,16 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   private subscriptions = new Subscription();
 
-  public form: FormGroup;
   public currentRoom: RoomModel | undefined;
 
   public roomTitle: string = '';
   public roomDescription: string = '';
   public messages: string[] = [];
 
-  public message = '';
+  public errorMessage = '';
+  public newMessage = '';
 
-  constructor(private api: BoothApiService, private fb: FormBuilder) {
-    this.form = this.fb.group([
-      { chat: '' }
-    ]);
-  }
+  constructor(private api: BoothApiService, private fb: FormBuilder) { }
 
   ngOnInit(): void {
     this.subscriptions.add(this.api.wss.roomUpdated.subscribe((resp: RoomUpdatedModel) => {
@@ -40,6 +36,7 @@ export class RoomComponent implements OnInit, OnDestroy {
         this.currentRoom.title = resp.room.title;
         this.currentRoom.description = resp.room.description;
         this.currentRoom.users = [...resp.room.users];
+        this.currentRoom.messages = [...resp.room.messages];
       }
     }));
   }
@@ -65,5 +62,22 @@ export class RoomComponent implements OnInit, OnDestroy {
         }
       }
     );
+  }
+
+  public sendMessage(): void {
+    if (!this.currentRoom || !this.currentRoom.id) {
+      console.log('fail to send');
+      return;
+    }
+
+    this.api.sendMessage({ roomId: this.currentRoom?.id, message: this.newMessage }).subscribe(
+      {
+        next: (resp: MessageModel) => { },
+        error: (err: HttpErrorResponse) => {
+          console.log('### sendMessage failed', `${err.status}. ${err.statusText}`);
+        }
+      }
+    );
+    this.newMessage = '';
   }
 }

@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, ObservableNotification, Subject, catchError, of, switchMap, tap } from 'rxjs';
 import { CreateRoomRequest, RoomModel } from '../models/room-model';
 import { WebsocketService } from './websocket-service';
+import { CreateMessageRequest, MessageModel } from '../models/message-model';
 
 export type LoginResponse = {
   isLoggedIn: boolean;
@@ -56,32 +57,9 @@ export class BoothApiService {
     return this.http.delete<RoomModel>(`/api/room/join/${roomId}`, { headers: this.headers });
   }
 
-
-  // public joinRoom(roomId: string): Observable<boolean> {
-  //   return this.http.post<any>(`/api/room/join/${roomId}`, null, { headers: this.headers }).pipe(
-  //     switchMap((room: RoomModel) => {
-  //       console.log(room);
-  //       this.enterRoomSubject$.next(room);
-  //       return of(true)
-  //     }),
-  //     catchError((err: HttpErrorResponse) => {
-  //       console.log(err);
-  //       return of(false)
-  //     }))
-  // }
-
-  // public exitRoom(roomId: string): Observable<boolean> {
-  //   return this.http.delete<any>(`/api/room/join/${roomId}`, { headers: this.headers }).pipe(
-  //     switchMap((room: RoomModel) => {
-  //       console.log(room);
-  //       this.exitRoomSubject$.next(room);
-  //       return of(true)
-  //     }),
-  //     catchError((err: HttpErrorResponse) => {
-  //       console.log(err);
-  //       return of(false)
-  //     }))
-  // }
+  public sendMessage(payload: CreateMessageRequest): Observable<MessageModel> {
+    return this.http.post<MessageModel>('/api/message', payload, { headers: this.headers });
+  }
 
   private get headers(): HttpHeaders {
     return new HttpHeaders({ 'Authorization': `Bearer ${this._jwtToken}` });
