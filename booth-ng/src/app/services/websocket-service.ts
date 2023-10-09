@@ -1,8 +1,7 @@
 import { Socket, io } from 'socket.io-client';
 import { DefaultEventsMap } from '@socket.io/component-emitter';
-import { ChangeType, MessageChangedModel, RoomChangedModel, RoomUpdatedModel, UserEnterExitRoomModel } from '../models/ws-models';
+import { ChangeType, RoomChangedModel, RoomUpdatedModel } from '../models/ws-models';
 import { Observable, Subject } from 'rxjs';
-import { MessageModel } from '../models/message-model';
 
 export class WebsocketService {
     private socket: Socket<DefaultEventsMap, DefaultEventsMap> | undefined;
@@ -34,11 +33,6 @@ export class WebsocketService {
         this.socket.on(ChangeType.RoomUpdated, (payload: RoomUpdatedModel) => {
             this.roomUpdated$.next(payload);
         });
-
-        this.socket.on(ChangeType.NewMessage, (payload: RoomChangedModel) => {
-            this.newMessage$.next(payload);
-        });
-
     }
 
     public get isConnected(): Observable<boolean> {

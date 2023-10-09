@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { Subscription, } from 'rxjs';
 import { MessageModel } from 'src/app/models/message-model';
 import { RoomModel } from 'src/app/models/room-model';
-import { RoomUpdatedModel, UserEnterExitRoomModel, MessageChangedModel } from 'src/app/models/ws-models';
+import { RoomUpdatedModel } from 'src/app/models/ws-models';
 import { BoothApiService } from 'src/app/services/booth-api.service';
 
 @Component({
