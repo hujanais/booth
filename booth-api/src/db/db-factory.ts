@@ -1,6 +1,6 @@
 import { RoomModel } from "../models/room-model";
 import { InternalUserModel, UserModel } from "../models/user-model";
-import { Session } from "../models/ws-models";
+import { ChangeType, Session } from "../models/ws-models";
 
 class DBFactory {
     private _users: InternalUserModel[] = [
@@ -75,7 +75,9 @@ class DBFactory {
         return sessions;
     }
 
+    // clean up as session is closed.
     public deleteSessionById(sessionId: string): void {
+        // delete the session from the sessions list.
         this._sessions.delete(sessionId);
     }
 

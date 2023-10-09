@@ -4,8 +4,9 @@ dotenv.config();
 import { Server, Socket } from 'socket.io';
 import dbFactory from '../db/db-factory';
 import { RoomModel } from '../models/room-model';
-import { RoomChangedModel, ChangeType, RoomUpdatedModel, Session } from '../models/ws-models';
+import { RoomChangedModel, ChangeType, RoomUpdatedModel } from '../models/ws-models';
 import { JWTUtility } from '../utilities/jwt-utility';
+import { v4 as uuidv4 } from 'uuid';
 
 const WEBSOCKET_CORS = {
     origin: "*",
@@ -66,6 +67,29 @@ class SocketIo {
                 if (session) {
                     console.log(`user ${dbFactory.getSessionById(sessionId)?.user.username} on ws-channel ${socket.id} has disconnected`);
                     dbFactory.deleteSessionById(sessionId);
+
+                    // if user was in a room. remove and notify.                    
+                    const userId = session.user.id;
+                    const room = dbFactory.rooms.find(r => r.users.find(u => u.id === userId));
+                    if (room) {
+                        let idx = room.users.findIndex(u => u.id === userId);
+                        if (idx >= 0) {
+                            room.users.splice(idx, 1);
+                            room.messages.push({
+                                id: uuidv4(),
+                                owner: {
+                                    id: session.user.id,
+                                    username: session.user.username
+                                },
+                                roomId: room.id!,
+                                message: `${session.user.username} has exited.`,
+                                timestamp: Date.now().valueOf()
+                            });
+                            this.notifyRoomChanged(room);
+                            this.notifyNewMessage(room);
+                        }
+                    }
+
                 }
             })
         });
@@ -78,6 +102,7 @@ class SocketIo {
             rooms: [...rooms]
         };
 
+        payload.room.messages = [];
         for (const session of dbFactory.getAllSessions()) {
             session.socket?.emit(ChangeType.RoomAdded, payload);
         }
@@ -90,6 +115,7 @@ class SocketIo {
             rooms: [...rooms]
         };
 
+        payload.room.messages = [];
         for (const session of dbFactory.getAllSessions()) {
             session.socket?.emit(ChangeType.RoomDeleted, payload);
         }
@@ -101,6 +127,7 @@ class SocketIo {
             room: { ...room }
         };
 
+        payload.room.messages = [];
         for (const session of dbFactory.getAllSessions()) {
             session.socket?.emit(ChangeType.RoomUpdated, payload);
         }
@@ -117,40 +144,6 @@ class SocketIo {
             session.socket?.emit(ChangeType.RoomUpdated, payload);
         }
     }
-
-    // only notify registered users
-    // public notifyUserJoined(payload: UserEnterExitRoomModel): void {
-    //     const sockets = connectedUsers[payload.user.id];
-    //     if (sockets) {
-    //         sockets.forEach(socket => {
-    //             socket.emit(ChangeType.UserEntered, payload);
-    //         });
-    //     }
-    // }
-
-    // only notify registered users
-    // public notifyUserLeft(payload: UserEnterExitRoomModel): void {
-    //     const sockets = connectedUsers[payload.user.id];
-    //     if (sockets) {
-    //         sockets.forEach(socket => {
-    //             socket.emit(ChangeType.UserExited, payload);
-    //         });
-    //     }
-    // }
-
-    // notify joined users with new incoming message.
-    // public notifyNewMessage(userIds: string[], payload: MessageModel): void {
-    //     for (const userId of userIds) {
-    //         const sockets = connectedUsers[userId];
-    //         if (!sockets) {
-    //             console.log(`notifyNewMessage failed because ${userId} is not connected`);
-    //             return;
-    //         }
-    //         sockets.forEach(socket => {
-    //             socket.emit(ChangeType.NewMessage, payload);
-    //         })
-    //     }
-    // }
 }
 
 export default new SocketIo();
