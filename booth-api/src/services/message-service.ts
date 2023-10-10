@@ -14,7 +14,7 @@ export class MessageService {
 
         const message: MessageModel = {
             id: uuidv4(),
-            owner: { id: user.id, username: user.username },
+            owner: { id: user.id, username: user.username, socketId: sessionId },
             roomId: payload.roomId,
             message: payload.message,
             timestamp: Date.now().valueOf(),

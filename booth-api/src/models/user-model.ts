@@ -6,10 +6,11 @@ export type InternalUserModel = {
 
 export type UserModel = {
     id: string;
+    socketId: string | undefined;
     username: string;
 }
 
-export type LoginUserRequest = { 
+export type LoginUserRequest = {
     username: string;
     password: string;
 }

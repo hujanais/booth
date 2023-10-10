@@ -34,7 +34,7 @@ export class UserService {
         }
 
         const sessionId = uuidv4();
-        dbFactory.addSession(sessionId, { user: { ...user }, socket: undefined });
+        dbFactory.addSession(sessionId, { user: { ...user, socketId: undefined }, socket: undefined });
         return this._jwtUtility.signToken(sessionId);
     }
 

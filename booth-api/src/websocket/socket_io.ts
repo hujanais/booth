@@ -79,6 +79,7 @@ class SocketIo {
                                 id: uuidv4(),
                                 owner: {
                                     id: session.user.id,
+                                    socketId: session.socket!.id,
                                     username: session.user.username
                                 },
                                 roomId: room.id!,
@@ -138,10 +139,9 @@ class SocketIo {
             room: { ...room }
         };
 
-        const userIds = room.users.map(u => u.id);
-        const sessions = dbFactory.getSessionsByUserId(userIds);
-        for (const session of sessions) {
-            session.socket?.emit(ChangeType.RoomUpdated, payload);
+        const sessionIds = room.users.map(u => u.socketId);
+        for (const sessionId of sessionIds) {
+            dbFactory.getSessionById(sessionId!)?.socket?.emit(ChangeType.RoomUpdated, payload);
         }
     }
 }
