@@ -2,6 +2,7 @@ import { Socket, io } from 'socket.io-client';
 import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { ChangeType, RoomChangedModel, RoomUpdatedModel } from '../models/ws-models';
 import { Observable, Subject } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 export class WebsocketService {
     private socket: Socket<DefaultEventsMap, DefaultEventsMap> | undefined;
@@ -12,7 +13,7 @@ export class WebsocketService {
     private newMessage$: Subject<RoomChangedModel> = new Subject<RoomChangedModel>();
 
     public connect(url: string, jwtToken: string) {
-        this.socket = io(`http://localhost:3001?jwtToken=${jwtToken}`);
+        this.socket = io(`${environment.wsUrl}?jwtToken=${jwtToken}`);
 
         this.socket.on("connect", () => {
             this.isConnected$.next(true);
