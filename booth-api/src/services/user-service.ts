@@ -7,34 +7,39 @@ export class UserService {
 
     private _jwtUtility = new JWTUtility(process.env.JWT_SECRET || '');
 
-    public register(payload: LoginUserRequest): void {
+    public async register(payload: LoginUserRequest): Promise<void> {
         // check if user already registered.
-        const user = dbFactory.getUserByName(payload.username);
+        const user = await dbFactory.getUserByName(payload.username);
         if (user) {
             throw new Error(`The user ${payload.username} already exists`);
         }
 
-        dbFactory.addUser({
+        await dbFactory.addUser({
             id: uuidv4(),
             username: payload.username,
             password: payload.password
         })
     }
 
-    public getAllUsers(): InternalUserModel[] {
+    public async getAllUsers(): Promise<InternalUserModel[]> {
         return dbFactory.getAllUsers();
     }
 
     // returns the bearer token
-    public login(payload: LoginUserRequest): string {
-        const user = dbFactory.getUserByName(payload.username);
+    public async login(payload: LoginUserRequest): Promise<string> {
+        const user = await dbFactory.getUserByName(payload.username);
         console.log(user?.password, payload.password);
         if (!user || (user.password !== payload.password)) {
             throw new Error(`${payload.username} is not found or invalid password`);
         }
 
         const sessionId = uuidv4();
-        dbFactory.addSession(sessionId, { user: { ...user, socketId: undefined }, socket: undefined });
+        dbFactory.addSession({
+            sessionId,
+            userId: user.id,
+            socketId: null,
+            roomId: null
+        });
         return this._jwtUtility.signToken(sessionId);
     }
 

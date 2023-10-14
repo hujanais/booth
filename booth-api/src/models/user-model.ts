@@ -6,7 +6,7 @@ export type InternalUserModel = {
 
 export type UserModel = {
     id: string;
-    socketId: string | undefined;
+    socketId: string | null;
     username: string;
 }
 

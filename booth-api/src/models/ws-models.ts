@@ -1,10 +1,10 @@
-import { Socket } from "socket.io";
 import { RoomModel } from "./room-model";
-import { UserModel } from "./user-model";
 
-export type Session = {
-    user: UserModel,
-    socket: Socket | undefined
+export type SessionModel = {
+    sessionId: string,
+    userId: string,
+    socketId: string | null,
+    roomId: string | null
 }
 
 export enum ChangeType {

@@ -6,12 +6,13 @@ import socketIo from "../websocket/socket_io";
 export class RoomService {
 
     public async getAllRooms(): Promise<RoomModel[]> {
-        return dbFactory.rooms;
+        return dbFactory.getAllRooms();
     }
 
     public async createRoom(sessionId: string, payload: CreateRoomRequest): Promise<RoomModel> {
 
-        const user = dbFactory.getUserBySessionId(sessionId);
+        const session = dbFactory.getSessionById(sessionId);
+        const user = await dbFactory.getUserById(session?.userId!);
         if (!user) throw new Error('Sorry invalid userId');
 
         const newRoom: RoomModel = {
@@ -27,32 +28,31 @@ export class RoomService {
             messages: []
         };
 
-        dbFactory.rooms.push(newRoom);
-        socketIo.notifyRoomAdded(newRoom, dbFactory.rooms);
+        await dbFactory.addRoom(newRoom);
+        const allRooms: RoomModel[] = await dbFactory.getAllRooms();
+        socketIo.notifyRoomAdded(newRoom, allRooms);
 
         return newRoom;
     }
 
     public async deleteRoom(sessionId: string, roomId: string): Promise<RoomModel> {
-        const room = dbFactory.rooms.find(r => r.id === roomId);
+        const room = (await dbFactory.getAllRooms()).find(r => r.id === roomId);
         if (!room) throw new Error(`The room ${roomId} is not found`);
 
         const session = dbFactory.getSessionById(sessionId);
-        if (room.owner.id !== session?.user.id) throw new Error('Cannot delete a room that you are not the owner');
+        if (room.owner.id !== session?.userId) throw new Error('Cannot delete a room that you are not the owner');
 
-        const idx = dbFactory.rooms.findIndex(r => r.id === roomId);
-        if (idx >= 0) {
-            dbFactory.rooms.splice(idx, 1);
-        }
-
-        socketIo.notifyRoomRemoved(room, dbFactory.rooms);
+        await dbFactory.deleteRoom(roomId);
+        const allRooms: RoomModel[] = await dbFactory.getAllRooms();
+        socketIo.notifyRoomRemoved(room, allRooms);
 
         return room;
     }
 
     public async updateRoom(sessionId: string, room: UpdateRoomRequest): Promise<RoomModel> {
-        const foundRoom = dbFactory.rooms.find(r => r.id === room.roomId);
-        const user = dbFactory.getUserBySessionId(sessionId);
+        const foundRoom = (await dbFactory.getAllRooms()).find(r => r.id === room.roomId);
+        const session = dbFactory.getSessionById(sessionId);
+        const user = await dbFactory.getUserById(session?.userId!);
         if (!foundRoom) throw new Error(`The room ${room.roomId} is not found`);
         if (foundRoom.owner.id !== user?.id) throw new Error('Cannot update a room that you are not the owner');
 
@@ -66,9 +66,10 @@ export class RoomService {
     }
 
     public async joinRoom(sessionId: string, roomId: string): Promise<RoomModel> {
-        const room = dbFactory.rooms.find(r => r.id === roomId);
+        const room = (await dbFactory.getAllRooms()).find(r => r.id === roomId);
         if (!room) throw new Error(`The room ${roomId} is not found`);
-        const user = dbFactory.getUserBySessionId(sessionId);
+        const session = dbFactory.getSessionById(sessionId);
+        const user = await dbFactory.getUserById(session?.userId!);
         if (!user) {
             throw new Error('joinRoom failed.  invalid sessionId');
         }
@@ -98,7 +99,7 @@ export class RoomService {
     }
 
     public async exitRoom(sessionId: string, roomId: string): Promise<RoomModel> {
-        const room = dbFactory.rooms.find(r => r.id === roomId);
+        const room = (await dbFactory.getAllRooms()).find(r => r.id === roomId);
         if (!room) throw new Error(`The room ${roomId} is not found`);
 
         if (!room.users.find(u => u.socketId === sessionId)) {

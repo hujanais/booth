@@ -1,100 +1,106 @@
 import { RoomModel } from "../models/room-model";
 import { InternalUserModel, UserModel } from "../models/user-model";
-import { ChangeType, Session } from "../models/ws-models";
+import { SessionModel } from "../models/ws-models";
+
+import * as sqlite3 from "sqlite3";
+import { DBUsers } from "./db-users";
+import { DBRooms } from "./db-rooms";
+import { DBSessions } from "./user-sessions";
 
 class DBFactory {
-    private _users: InternalUserModel[] = [
-        {
-            id: '11111',    // Bearer eyJhbGciOiJIUzI1NiJ9.MTExMTE.Mwkc_FxYOmECkIahgcnGK4pW1KHfVx8OzN1aaXu01Dg
-            username: 'satu',
-            password: 'password'
-        },
-        {
-            id: '22222',    // Bearer eyJhbGciOiJIUzI1NiJ9.MjIyMjI.kjNo4dXKb3qgBlsH65ofofxtqFoNbCacZPIR8bsjhhE
-            username: 'dua',
-            password: 'password'
-        }
-    ]
+    private db: sqlite3.Database;
+    private dbUsers: DBUsers;
+    private dbRooms: DBRooms;
+    private dbSessions: DBSessions;
 
-    private _rooms: RoomModel[] = [];
-    public get rooms(): RoomModel[] {
-        return this._rooms;
-    }
+    private _users: InternalUserModel[] = [];
 
-    public getAllUsers(): InternalUserModel[] {
-        return this._users;
-    }
+    public rooms: RoomModel[] = [];
 
-    public getUserBySessionId(id: string): InternalUserModel | undefined {
-        const session = this.getSessionById(id);
-        if (session) {
-            return this._users.find(u => u.id === session.user.id);
-        }
-
-        return undefined;
-    }
-
-    public getUserByName(username: string): InternalUserModel | undefined {
-        return this._users.find(u => u.username === username);
-    }
-
-    public addUser(user: InternalUserModel): void {
-        this._users.push(user);
-    }
-
-    // // key - sessionId. sessionId to {user, socket} relationship is 1 to 1.
-    private _sessions: Map<string, Session> = new Map<string, Session>(); // sessionId to {user, socket} relationship is 1 to 1.
-
-    public addSession(sessionId: string, value: Session): void {
-        this._sessions.set(sessionId, value);
-    }
-
-    public getSessionById(sessionId: string): Session | undefined {
-        return this._sessions.get(sessionId);
-    }
-
-    public getSessionBySocketId(socketId: string): Session | null {
-        for (const [key, value] of this._sessions) {
-            const session = this._sessions.get(key);
-            if (session?.socket?.id === socketId) {
-                return session;
+    constructor() {
+        this.db = new sqlite3.Database('./db.sqlite', (error) => {
+            if (error) {
+                console.error(error.message);
+                return;
             }
-        }
+        });
 
-        return null;
+        console.log("Connection with SQLite has been established");
+        this.dbUsers = new DBUsers(this.db);
+        this.dbRooms = new DBRooms(this.db);
+        this.dbSessions = new DBSessions();
+
+        this.dbUsers.createUsersTable().then(flag => {
+            console.log('user-table created');
+        }).catch(errmsg => {
+            console.log(errmsg)
+        });
+
+        this.dbRooms.createRoomsTable().then(flag => {
+            console.log('rooms-table created');
+        }).catch(errmsg => {
+            console.log(errmsg)
+        });
     }
 
-    public getSessionsByUserId(userIds: string[]): Session[] {
-        const sessions: Session[] = [];
-        for (const [key, session] of this._sessions) {
-            if (userIds.includes(session.user.id)) {
-                sessions.push(session);
-            }
-        }
-
-        return sessions;
+    public async getUserById(id: string): Promise<InternalUserModel> {
+        return this.dbUsers.getUserById(id);
     }
+
+    public async getAllUsers(): Promise<InternalUserModel[]> {
+        return this.dbUsers.getAllUsers();
+    }
+
+    public addUser(user: InternalUserModel): Promise<number> {
+        return this.dbUsers.addUser(user);
+    }
+
+    public getUserByName(username: string): Promise<InternalUserModel | null> {
+       return this.dbUsers.getUserByName(username);
+    }
+
+    public async getAllRooms(): Promise<RoomModel[]> {
+       return this.dbRooms.getAllRooms();
+    }
+
+    public async addRoom(room: RoomModel): Promise<number> {
+       return this.dbRooms.addRoom(room);
+    }
+
+    public async deleteRoom(roomId: string): Promise<string> {
+        return this.dbRooms.deleteRoom(roomId);
+    }
+
+    public addSession(session: SessionModel): void {
+        this.dbSessions.addSession(session);
+    }
+
+    public getSessionById(sessionId: string): SessionModel | undefined {
+        return this.dbSessions.getSessionById(sessionId);
+    }
+
+    public getSessionBySocketId(socketId: string): SessionModel | undefined  {
+        return this.dbSessions.getSessionBySocketId(socketId);
+    }
+
+    // public getSessionsByUserId(userIds: string[]): Session[] {
+    //     const sessions: Session[] = [];
+    //     for (const [key, session] of this._sessions) {
+    //         if (userIds.includes(session.user.id)) {
+    //             sessions.push(session);
+    //         }
+    //     }
+
+    //     return sessions;
+    // }
 
     // clean up as session is closed.
     public deleteSessionById(sessionId: string): void {
-        // delete the session from the sessions list.
-        this._sessions.delete(sessionId);
+       this.dbSessions.deleteSessionById(sessionId);
     }
 
-    public getAllSessions(): Session[] {
-        return [...this._sessions.values()];
-    }
-
-    private lookupSessionsFromUserId(userId: string): Session[] {
-        const foundSessions: Session[] = [];
-        for (let sessionId in this._sessions) {
-            const session = this._sessions.get(sessionId);
-            if (session?.user.id === userId) {
-                foundSessions.push(session);
-            }
-        }
-
-        return foundSessions;
+    public getAllSessions(): SessionModel[] {
+        return this.dbSessions.getAllSessions();
     }
 }
 

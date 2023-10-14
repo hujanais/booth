@@ -17,6 +17,7 @@ class SocketIo {
 
     private io: Server | undefined;
     private jwtUtility: JWTUtility;
+    private wssChannels: Map<string, Socket> = new Map<string, Socket>();
 
     constructor() {
         this.jwtUtility = new JWTUtility(process.env.JWT_SECRET || '');
@@ -41,19 +42,16 @@ class SocketIo {
                 return;
             }
 
-            const user = session.user;
-
             // if invalid username
-            if (!user) {
-                console.log('Invalid username. socket closed');
-                socket.emit('error', 'Invalid username.');
+            if (!session.userId) {
+                console.log('Invalid userId. socket closed');
                 socket.disconnect();
                 return;
             }
 
-            console.log(`user ${user.username} on ws-channel ${socket.id} has joined`);
-
-            session.socket = socket;
+            console.log(`user ${session.userId} on ws-channel ${socket.id} has joined`);
+            session.socketId = socket.id;
+            this.wssChannels.set(socket.id, socket);
 
             // handle incoming message.  optional
             socket.on('chatmessage', (message: string) => {
@@ -61,16 +59,17 @@ class SocketIo {
             })
 
             // handle socket disconnect.
-            socket.on('disconnect', () => {
+            socket.on('disconnect', async () => {
                 // remove the session.
                 const session = dbFactory.getSessionBySocketId(socket.id);
                 if (session) {
-                    console.log(`user ${dbFactory.getSessionById(sessionId)?.user.username} on ws-channel ${socket.id} has disconnected`);
+                    console.log(`user ${session.userId} on ws-channel ${socket.id} has disconnected`);
                     dbFactory.deleteSessionById(sessionId);
 
-                    // if user was in a room. remove and notify.                    
-                    const userId = session.user.id;
-                    const room = dbFactory.rooms.find(r => r.users.find(u => u.id === userId));
+                    // if user was in a room. remove and notify.
+                    const userId = session.userId;
+                    const rooms = await dbFactory.getAllRooms();
+                    const room = rooms.find(r => r.users.find(u => u.id === userId));
                     if (room) {
                         let idx = room.users.findIndex(u => u.id === userId);
                         if (idx >= 0) {
@@ -78,12 +77,12 @@ class SocketIo {
                             room.messages.push({
                                 id: uuidv4(),
                                 owner: {
-                                    id: session.user.id,
-                                    socketId: session.socket!.id,
-                                    username: session.user.username
+                                    id: session.userId,
+                                    socketId: session.socketId,
+                                    username: session.userId
                                 },
                                 roomId: room.id!,
-                                message: `${session.user.username} has exited.`,
+                                message: `${session.userId} has exited.`,
                                 timestamp: Date.now().valueOf()
                             });
                             this.notifyRoomChanged(room);
@@ -105,7 +104,8 @@ class SocketIo {
 
         payload.room.messages = [];
         for (const session of dbFactory.getAllSessions()) {
-            session.socket?.emit(ChangeType.RoomAdded, payload);
+            const socket = this.wssChannels.get(session.socketId!);
+            socket?.emit(ChangeType.RoomAdded, payload);
         }
     }
 
@@ -118,7 +118,8 @@ class SocketIo {
 
         payload.room.messages = [];
         for (const session of dbFactory.getAllSessions()) {
-            session.socket?.emit(ChangeType.RoomDeleted, payload);
+            const socket = this.wssChannels.get(session.socketId!);
+            socket?.emit(ChangeType.RoomDeleted, payload);
         }
     }
 
@@ -130,7 +131,8 @@ class SocketIo {
 
         payload.room.messages = [];
         for (const session of dbFactory.getAllSessions()) {
-            session.socket?.emit(ChangeType.RoomUpdated, payload);
+            const socket = this.wssChannels.get(session.socketId!);
+            socket?.emit(ChangeType.RoomUpdated, payload);
         }
     }
 
@@ -141,7 +143,7 @@ class SocketIo {
 
         const sessionIds = room.users.map(u => u.socketId);
         for (const sessionId of sessionIds) {
-            dbFactory.getSessionById(sessionId!)?.socket?.emit(ChangeType.RoomUpdated, payload);
+            // dbFactory.getSessionById(sessionId!)?.socket?.emit(ChangeType.RoomUpdated, payload);
         }
     }
 }

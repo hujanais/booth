@@ -9,7 +9,8 @@ export class MessageService {
     public async postMessage(sessionId: string, payload: CreateMessageRequest): Promise<MessageModel> {
         const room = _dbFactory.rooms.find(r => r.id === payload.roomId);
         if (!room) throw new Error('Cannot find the room to post-message');
-        const user = dbFactory.getUserBySessionId(sessionId);
+        const session = dbFactory.getSessionById(sessionId);
+        const user = await dbFactory.getUserById(session?.userId!);
         if (!user) throw new Error('User is not part of this room');
 
         const message: MessageModel = {
@@ -47,7 +48,8 @@ export class MessageService {
         for (let i = 0; i < _dbFactory.rooms.length; i++) {
             const room = _dbFactory.rooms[i];
 
-            const user = dbFactory.getUserBySessionId(sessionId);
+            const session = dbFactory.getSessionById(sessionId);
+            const user = await dbFactory.getUserById(session?.userId!);
 
             const idx = room.messages.findIndex(m => m.id === messageId);
             if (idx >= 0) {
