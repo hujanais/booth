@@ -17,6 +17,7 @@ router.post('/room/join/:roomId', async (req: Request, res: Response) => {
 
     try {
         const resp = await roomService.joinRoom(sessionId, roomId);
+        console.log(`${sessionId} has joined the room`);
         res.json(resp);
     } catch (err: any) {
         res.status(500).send(err.message);
@@ -30,6 +31,7 @@ router.delete('/room/join/:roomId', async (req: Request, res: Response) => {
 
     try {
         const resp = await roomService.exitRoom(sessionId, roomId);
+        console.log(`${sessionId} has exited the room`);
         res.json(resp);
     } catch (err: any) {
         res.status(500).send(err.message);
@@ -45,6 +47,7 @@ router.post('/room', async (req: Request, res: Response) => {
 
     try {
         const resp = await roomService.createRoom(sessionId, payload);
+        console.log(`${sessionId} has created a new room ${resp.id}`);
         res.json(resp);
     } catch (err: any) {
         res.status(500).send(err.message);
@@ -82,6 +85,7 @@ router.delete('/room/:roomId', async (req: Request, res: Response) => {
     try {
         const roomId = req.params.roomId;
         const room = await roomService.deleteRoom(sessionId, roomId);
+        console.log(`${sessionId} has deleted a room ${roomId}`);
         res.json(room);
     } catch (err: any) {
         res.status(500).send(err.message);

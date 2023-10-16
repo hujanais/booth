@@ -7,6 +7,7 @@ import { RoomModel } from '../models/room-model';
 import { RoomChangedModel, ChangeType, RoomUpdatedModel } from '../models/ws-models';
 import { JWTUtility } from '../utilities/jwt-utility';
 import { v4 as uuidv4 } from 'uuid';
+import { UserSessionModel } from '../models/user-model';
 
 const WEBSOCKET_CORS = {
     origin: "*",
@@ -79,7 +80,6 @@ class SocketIo {
                                 id: uuidv4(),
                                 owner: {
                                     id: session.user.id,
-                                    socketId: session.socket!.id,
                                     username: session.user.username
                                 },
                                 roomId: room.id!,
@@ -125,23 +125,45 @@ class SocketIo {
     // Room modified
     public notifyRoomChanged(room: RoomModel): void {
         const payload: RoomUpdatedModel = {
-            room: { ...room }
-        };
+            id: room.id,
+            owner: {...room.owner},
+            users: room.users.map(u => {
+                return {
+                    id: u.id,
+                    username: u.username
+                }
+            }),
+            title: room.title,
+            description: room.description,
+            messages: [] // no messages
+        }
 
-        payload.room.messages = [];
-        for (const session of dbFactory.getAllSessions()) {
-            session.socket?.emit(ChangeType.RoomUpdated, payload);
+        for (const user of room.users) {
+            for (const socket of user.sockets) {
+                console.log(user.username, socket.id);
+                socket.emit(ChangeType.RoomUpdated, payload);
+            }
         }
     }
 
     public notifyNewMessage(room: RoomModel): void {
         const payload: RoomUpdatedModel = {
-            room: { ...room }
-        };
-
-        const sessionIds = room.users.map(u => u.socketId);
-        for (const sessionId of sessionIds) {
-            dbFactory.getSessionById(sessionId!)?.socket?.emit(ChangeType.RoomUpdated, payload);
+            id: room.id,
+            owner: {...room.owner},
+            users: room.users.map(u => {
+                return {
+                    id: u.id,
+                    username: u.username
+                }
+            }),
+            title: room.title,
+            description: room.description,
+            messages: [...room.messages]
+        }
+        for (const user of room.users) {
+            for (const socket of user.sockets) {
+                socket.emit(ChangeType.RoomUpdated, payload);
+            }
         }
     }
 }
