@@ -29,8 +29,11 @@ export class UserService {
 
     // returns the bearer token
     public async login(payload: LoginUserRequest): Promise<string> {
+        if (payload.username && payload.password) {
+            throw new Error('Invalid login request');
+        }
+
         const user = await dbFactory.getUserByName(payload.username);
-        console.log(user?.password, payload.password);
         if (!user || (user.password !== payload.password)) {
             throw new Error(`${payload.username} is not found or invalid password`);
         }
