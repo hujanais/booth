@@ -12,6 +12,7 @@ export class UserService {
         // check if user already registered.
         const user = await dbFactory.getUserByName(payload.username);
         if (user) {
+            console.log(`The user ${payload.username} already exists`)
             throw new Error(`The user ${payload.username} already exists`);
         }
 

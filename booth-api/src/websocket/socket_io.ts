@@ -53,6 +53,7 @@ class SocketIo {
             }
 
             console.log(`user ${user.username} on ws-channel ${socket.id} has joined`);
+            console.log('sessions', dbFactory.sessions.map(v => `${v.user.username}, ${v.sessionId}`));
 
             session.socket = socket;
 
@@ -68,6 +69,8 @@ class SocketIo {
                 if (session) {
                     console.log(`user ${dbFactory.getSessionById(sessionId)?.user.username} on ws-channel ${socket.id} has disconnected`);
                     dbFactory.deleteSessionById(sessionId);
+
+                    console.log('sessions', dbFactory.sessions.map(v => [v.user.username, v.sessionId]));
 
                     // if user was in a room. remove and notify.                    
                     const userId = session.user.id;
@@ -123,6 +126,7 @@ class SocketIo {
     }
 
     // Room modified
+    // notify everyone
     public notifyRoomChanged(room: RoomModel): void {
         const payload: RoomUpdatedModel = {
             id: room.id,
@@ -138,14 +142,12 @@ class SocketIo {
             messages: [] // no messages
         }
 
-        for (const user of room.users) {
-            for (const socket of user.sockets) {
-                console.log(user.username, socket.id);
-                socket.emit(ChangeType.RoomUpdated, payload);
-            }
+        for (const session of dbFactory.sessions) {
+            session.socket?.emit(ChangeType.RoomUpdated, payload);
         }
     }
 
+    // selectively notify users in the room only.
     public notifyNewMessage(room: RoomModel): void {
         const payload: RoomUpdatedModel = {
             id: room.id,
@@ -162,7 +164,7 @@ class SocketIo {
         }
         for (const user of room.users) {
             for (const socket of user.sockets) {
-                socket.emit(ChangeType.RoomUpdated, payload);
+                socket.emit(ChangeType.NewMessage, payload);
             }
         }
     }

@@ -50,12 +50,12 @@ export class RoomsComponent implements OnDestroy {
       this.api.wss.roomUpdated.subscribe(
         {
           next: (resp: RoomUpdatedModel) => {
-            const room = this.rooms.find(r => r.id === resp.room.id);
+            const room = this.rooms.find(r => r.id === resp.id);
             if (room) {
               room.users.length = 0;
-              room.users = [...resp.room.users];
-              room.title = resp.room.title;
-              room.description = resp.room.description;
+              room.users = [...resp.users];
+              room.title = resp.title;
+              room.description = resp.description;
             }
           },
           error: (err: HttpErrorResponse) => { }

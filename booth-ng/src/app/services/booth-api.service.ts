@@ -55,11 +55,7 @@ export class BoothApiService {
   }
 
   public joinRoom(roomId: string): Observable<RoomModel> {
-    return this.http.post<RoomModel>(`/api/room/join/${roomId}`, null, { headers: this.headers }).pipe(
-      tap((resp: RoomModel) => {
-        this.joinRoom$.next(resp);
-      }),
-    );
+    return this.http.post<RoomModel>(`/api/room/join/${roomId}`, null, { headers: this.headers });
   }
 
   public exitRoom(roomId: string): Observable<RoomModel> {

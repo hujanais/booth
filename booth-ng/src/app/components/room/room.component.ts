@@ -28,30 +28,15 @@ export class RoomComponent implements OnInit, OnDestroy {
   constructor(private api: BoothApiService, private fb: FormBuilder) { }
 
   ngOnInit(): void {
-    this.subscriptions.add(this.api.onRoomJoined.subscribe((room: RoomModel) => {
-      this.currentRoom = { ...room };
-    }));
-
-    this.subscriptions.add(this.api.wss.roomUpdated.subscribe((resp: RoomUpdatedModel) => {
+    this.subscriptions.add(this.api.wss.newMessage.subscribe((room: RoomUpdatedModel) => {
       if (!this.currentRoom) {
-        // do nothing.
+        this.currentRoom = {...room}
         return;
       }
-      this.currentRoom.title = resp.room.title;
-      this.currentRoom.description = resp.room.description;
-      this.currentRoom.users = [...resp.room.users];
-      this.currentRoom.messages = [...resp.room.messages];
-    }));
-
-    this.subscriptions.add(this.api.wss.newMessage.subscribe((resp: RoomUpdatedModel) => {
-      if (!this.currentRoom) {
-        console.log('we should be getting this message');
-        return;
-      }
-      this.currentRoom.title = resp.room.title;
-      this.currentRoom.description = resp.room.description;
-      this.currentRoom.users = [...resp.room.users];
-      this.currentRoom.messages = [...resp.room.messages];
+      this.currentRoom.title = room.title;
+      this.currentRoom.description = room.description;
+      this.currentRoom.users = [...room.users];
+      this.currentRoom.messages = [...room.messages];
     }));
   }
 
