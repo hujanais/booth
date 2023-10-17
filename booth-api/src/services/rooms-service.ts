@@ -2,24 +2,24 @@ import { CreateRoomRequest, RoomModel, UpdateRoomRequest } from "../models/room-
 import { v4 as uuidv4 } from 'uuid';
 import dbFactory from "../db/db-factory";
 import socketIo from "../websocket/socket_io";
+import { RoomUpdatedModel } from "../models/ws-models";
 
 export class RoomService {
 
     public async getAllRooms(): Promise<RoomModel[]> {
-        return dbFactory.getAllRooms();
+        return dbFactory.rooms;
     }
 
-    public async createRoom(sessionId: string, payload: CreateRoomRequest): Promise<RoomModel> {
+    public async createRoom(sessionId: string, payload: CreateRoomRequest): Promise<RoomUpdatedModel> {
 
         const session = dbFactory.getSessionById(sessionId);
-        const user = await dbFactory.getUserById(session?.userId!);
+        const user = session?.user;
         if (!user) throw new Error('Sorry invalid userId');
 
-        const newRoom: RoomModel = {
+        const room: RoomModel = {
             id: uuidv4(),
             owner: {
                 id: user.id,
-                socketId: sessionId,
                 username: user.username
             },
             title: payload.title,
@@ -28,31 +28,61 @@ export class RoomService {
             messages: []
         };
 
-        await dbFactory.addRoom(newRoom);
-        const allRooms: RoomModel[] = await dbFactory.getAllRooms();
-        socketIo.notifyRoomAdded(newRoom, allRooms);
+        dbFactory.rooms.push(room);
+        socketIo.notifyRoomAdded(room, dbFactory.rooms);
 
-        return newRoom;
+        const response: RoomUpdatedModel = {
+            id: room.id,
+            owner: {...room.owner},
+            users: room.users.map(u => {
+                return {
+                    id: u.id,
+                    username: u.username
+                }
+            }),
+            title: room.title,
+            description: room.description,
+            messages: [...room.messages]
+        }
+
+        return response;
     }
 
-    public async deleteRoom(sessionId: string, roomId: string): Promise<RoomModel> {
-        const room = (await dbFactory.getAllRooms()).find(r => r.id === roomId);
+    public async deleteRoom(sessionId: string, roomId: string): Promise<RoomUpdatedModel> {
+        const room = dbFactory.rooms.find(r => r.id === roomId);
         if (!room) throw new Error(`The room ${roomId} is not found`);
 
         const session = dbFactory.getSessionById(sessionId);
-        if (room.owner.id !== session?.userId) throw new Error('Cannot delete a room that you are not the owner');
+        if (room.owner.id !== session?.user.id) throw new Error('Cannot delete a room that you are not the owner');
 
-        await dbFactory.deleteRoom(roomId);
-        const allRooms: RoomModel[] = await dbFactory.getAllRooms();
-        socketIo.notifyRoomRemoved(room, allRooms);
+        const idx = dbFactory.rooms.findIndex(r => r.id === roomId);
+        if (idx >= 0) {
+            dbFactory.rooms.splice(idx, 1);
+        }
 
-        return room;
+        socketIo.notifyRoomRemoved(room, dbFactory.rooms);
+
+        const response: RoomUpdatedModel = {
+            id: room.id,
+            owner: {...room.owner},
+            users: room.users.map(u => {
+                return {
+                    id: u.id,
+                    username: u.username
+                }
+            }),
+            title: room.title,
+            description: room.description,
+            messages: [...room.messages]
+        }
+
+        return response;
     }
 
-    public async updateRoom(sessionId: string, room: UpdateRoomRequest): Promise<RoomModel> {
-        const foundRoom = (await dbFactory.getAllRooms()).find(r => r.id === room.roomId);
+    public async updateRoom(sessionId: string, room: UpdateRoomRequest): Promise<RoomUpdatedModel> {
+        const foundRoom = dbFactory.rooms.find(r => r.id === room.roomId);
         const session = dbFactory.getSessionById(sessionId);
-        const user = await dbFactory.getUserById(session?.userId!);
+        const user = session?.user;
         if (!foundRoom) throw new Error(`The room ${room.roomId} is not found`);
         if (foundRoom.owner.id !== user?.id) throw new Error('Cannot update a room that you are not the owner');
 
@@ -62,29 +92,53 @@ export class RoomService {
         socketIo.notifyRoomChanged(foundRoom);
         socketIo.notifyNewMessage(foundRoom);
 
-        return foundRoom;
+        const response: RoomUpdatedModel = {
+            id: foundRoom.id,
+            owner: {...foundRoom.owner},
+            users: foundRoom.users.map(u => {
+                return {
+                    id: u.id,
+                    username: u.username
+                }
+            }),
+            title: foundRoom.title,
+            description: foundRoom.description,
+            messages: [...foundRoom.messages]
+        }
+
+        return response;
     }
 
-    public async joinRoom(sessionId: string, roomId: string): Promise<RoomModel> {
-        const room = (await dbFactory.getAllRooms()).find(r => r.id === roomId);
+    public async joinRoom(sessionId: string, roomId: string): Promise<RoomUpdatedModel> {
+        const room = dbFactory.rooms.find(r => r.id === roomId);
         if (!room) throw new Error(`The room ${roomId} is not found`);
         const session = dbFactory.getSessionById(sessionId);
-        const user = await dbFactory.getUserById(session?.userId!);
+        const user = session?.user;
         if (!user) {
             throw new Error('joinRoom failed.  invalid sessionId');
         }
 
-        if (room.users.find(p => p.socketId === sessionId)) {
+        const connectedSession = room.users.find(u => u.sockets.map(s => s.id).find(sId => sId === sessionId));
+        if (connectedSession) {
             // user already in the room but this is a new session.
             return room;
         }
 
-        room.users.push({ id: user.id, username: user.username, socketId: sessionId });
+        const connectedUser = room.users.find(u => u.id === user.id);
+        if (!connectedUser)  {
+            room.users.push({
+                id: user.id,
+                username: user.username,
+                sockets: [session.socket!]
+            });
+        } else {
+            connectedUser.sockets.push(session.socket!);
+        }
+
         room.messages.push({
             id: uuidv4(),
             owner: {
                 id: user.id,
-                socketId: sessionId,
                 username: user.username
             },
             roomId: room.id!,
@@ -95,25 +149,42 @@ export class RoomService {
         socketIo.notifyRoomChanged(room);
         socketIo.notifyNewMessage(room);
 
-        return room;
-    }
-
-    public async exitRoom(sessionId: string, roomId: string): Promise<RoomModel> {
-        const room = (await dbFactory.getAllRooms()).find(r => r.id === roomId);
-        if (!room) throw new Error(`The room ${roomId} is not found`);
-
-        if (!room.users.find(u => u.socketId === sessionId)) {
-            throw new Error('exitRoom failed because sessionId is invalid');
+        const response: RoomUpdatedModel = {
+            id: room.id,
+            owner: {...room.owner},
+            users: room.users.map(u => {
+                return {
+                    id: u.id,
+                    username: u.username
+                }
+            }),
+            title: room.title,
+            description: room.description,
+            messages: [...room.messages]
         }
 
-        const idx = room.users.findIndex(u => u.socketId === sessionId);
-        if (idx >= 0) {
-            const user = room.users[idx];
+        return response;
+    }
+
+    public async exitRoom(sessionId: string, roomId: string): Promise<RoomUpdatedModel> {
+        const room = dbFactory.rooms.find(r => r.id === roomId);
+        if (!room) throw new Error(`The room ${roomId} is not found`);
+
+        const session = dbFactory.getSessionById(sessionId);
+        if(!session) throw new Error('exit room failed because sessionId is invalid');
+        const socketId = session.socket?.id;        
+
+        // get the user that exited.
+        const userIdx = room.users.findIndex(u => u.id === session.user.id);
+        if (userIdx < 0) throw new Error('exit room failed because user not found');
+
+        const socketIdx = room.users[userIdx].sockets.findIndex(s => s.id === socketId);
+        if (socketIdx >= 0) {
+            const user = room.users[userIdx];
             room.messages.push({
                 id: uuidv4(),
                 owner: {
                     id: user.id,
-                    socketId: sessionId,
                     username: user.username
                 },
                 roomId: room.id!,
@@ -121,12 +192,29 @@ export class RoomService {
                 timestamp: Date.now().valueOf()
             });
 
-            room.users.splice(idx, 1);
+            user.sockets.splice(socketIdx, 1);
+            if (user.sockets.length === 0) {
+                room.users.splice(userIdx, 1);
+            }
+
             socketIo.notifyRoomChanged(room);
             socketIo.notifyNewMessage(room);
-
         }
 
-        return room;
+        const response: RoomUpdatedModel = {
+            id: room.id,
+            owner: {...room.owner},
+            users: room.users.map(u => {
+                return {
+                    id: u.id,
+                    username: u.username
+                }
+            }),
+            title: room.title,
+            description: room.description,
+            messages: [...room.messages]
+        }
+
+        return response;
     }
 }

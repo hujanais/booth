@@ -1,5 +1,6 @@
 import dbFactory from "../db/db-factory";
 import { InternalUserModel, LoginUserRequest } from "../models/user-model";
+import { Session } from "../models/ws-models";
 import { JWTUtility } from "../utilities/jwt-utility";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -11,6 +12,7 @@ export class UserService {
         // check if user already registered.
         const user = await dbFactory.getUserByName(payload.username);
         if (user) {
+            console.log(`The user ${payload.username} already exists`)
             throw new Error(`The user ${payload.username} already exists`);
         }
 
@@ -27,20 +29,27 @@ export class UserService {
 
     // returns the bearer token
     public async login(payload: LoginUserRequest): Promise<string> {
+        if (payload.username && payload.password) {
+            throw new Error('Invalid login request');
+        }
+
         const user = await dbFactory.getUserByName(payload.username);
-        console.log(user?.password, payload.password);
         if (!user || (user.password !== payload.password)) {
             throw new Error(`${payload.username} is not found or invalid password`);
         }
 
-        const sessionId = uuidv4();
-        dbFactory.addSession({
-            sessionId,
-            userId: user.id,
-            socketId: null,
+        const newSession: Session = {
+            sessionId: uuidv4(),
+            user: {
+                id: user.id,
+                username: user.username
+            },
+            socket: null,
             roomId: null
-        });
-        return this._jwtUtility.signToken(sessionId);
+        };
+
+        dbFactory.sessions.push(newSession);
+        return this._jwtUtility.signToken(newSession.sessionId);
     }
 
     public logout() {

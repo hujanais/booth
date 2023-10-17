@@ -43,8 +43,12 @@ export class LoginComponent implements OnInit, OnDestroy {
       next: (jwtToken: string) => {
         this.message = `Welcome ${username}`;
       },
-      error: (err: HttpErrorResponse) => {
-        this.message = `${err.status}. ${err.statusText}`;
+      error: (err: HttpErrorResponse | Error) => {
+        if (err instanceof HttpErrorResponse) {
+          this.message = `${err.status}. ${err.error}`;
+        } else {
+          this.message = `${err.message}`;
+        }
       }
     })
   }

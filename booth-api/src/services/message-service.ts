@@ -10,12 +10,12 @@ export class MessageService {
         const room = _dbFactory.rooms.find(r => r.id === payload.roomId);
         if (!room) throw new Error('Cannot find the room to post-message');
         const session = dbFactory.getSessionById(sessionId);
-        const user = await dbFactory.getUserById(session?.userId!);
+        const user = session?.user;
         if (!user) throw new Error('User is not part of this room');
 
         const message: MessageModel = {
             id: uuidv4(),
-            owner: { id: user.id, username: user.username, socketId: sessionId },
+            owner: { id: user.id, username: user.username },
             roomId: payload.roomId,
             message: payload.message,
             timestamp: Date.now().valueOf(),
@@ -49,7 +49,7 @@ export class MessageService {
             const room = _dbFactory.rooms[i];
 
             const session = dbFactory.getSessionById(sessionId);
-            const user = await dbFactory.getUserById(session?.userId!);
+            const user = session?.user;
 
             const idx = room.messages.findIndex(m => m.id === messageId);
             if (idx >= 0) {

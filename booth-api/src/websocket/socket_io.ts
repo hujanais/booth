@@ -7,6 +7,7 @@ import { RoomModel } from '../models/room-model';
 import { RoomChangedModel, ChangeType, RoomUpdatedModel } from '../models/ws-models';
 import { JWTUtility } from '../utilities/jwt-utility';
 import { v4 as uuidv4 } from 'uuid';
+import { UserSessionModel } from '../models/user-model';
 
 const WEBSOCKET_CORS = {
     origin: "*",
@@ -17,7 +18,6 @@ class SocketIo {
 
     private io: Server | undefined;
     private jwtUtility: JWTUtility;
-    private wssChannels: Map<string, Socket> = new Map<string, Socket>();
 
     constructor() {
         this.jwtUtility = new JWTUtility(process.env.JWT_SECRET || '');
@@ -42,16 +42,20 @@ class SocketIo {
                 return;
             }
 
+            const user = session.user;
+
             // if invalid username
-            if (!session.userId) {
-                console.log('Invalid userId. socket closed');
+            if (!user) {
+                console.log('Invalid username. socket closed');
+                socket.emit('error', 'Invalid username.');
                 socket.disconnect();
                 return;
             }
 
-            console.log(`user ${session.userId} on ws-channel ${socket.id} has joined`);
-            session.socketId = socket.id;
-            this.wssChannels.set(socket.id, socket);
+            console.log(`user ${user.username} on ws-channel ${socket.id} has joined`);
+            console.log('sessions #', dbFactory.sessions.length);
+
+            session.socket = socket;
 
             // handle incoming message.  optional
             socket.on('chatmessage', (message: string) => {
@@ -59,17 +63,18 @@ class SocketIo {
             })
 
             // handle socket disconnect.
-            socket.on('disconnect', async () => {
+            socket.on('disconnect', () => {
                 // remove the session.
                 const session = dbFactory.getSessionBySocketId(socket.id);
                 if (session) {
-                    console.log(`user ${session.userId} on ws-channel ${socket.id} has disconnected`);
+                    console.log(`user ${dbFactory.getSessionById(sessionId)?.user.username} on ws-channel ${socket.id} has disconnected`);
                     dbFactory.deleteSessionById(sessionId);
 
-                    // if user was in a room. remove and notify.
-                    const userId = session.userId;
-                    const rooms = await dbFactory.getAllRooms();
-                    const room = rooms.find(r => r.users.find(u => u.id === userId));
+                    console.log('sessions #', dbFactory.sessions.length);
+
+                    // if user was in a room. remove and notify.                    
+                    const userId = session.user.id;
+                    const room = dbFactory.rooms.find(r => r.users.find(u => u.id === userId));
                     if (room) {
                         let idx = room.users.findIndex(u => u.id === userId);
                         if (idx >= 0) {
@@ -77,12 +82,11 @@ class SocketIo {
                             room.messages.push({
                                 id: uuidv4(),
                                 owner: {
-                                    id: session.userId,
-                                    socketId: session.socketId,
-                                    username: session.userId
+                                    id: session.user.id,
+                                    username: session.user.username
                                 },
                                 roomId: room.id!,
-                                message: `${session.userId} has exited.`,
+                                message: `${session.user.username} has exited.`,
                                 timestamp: Date.now().valueOf()
                             });
                             this.notifyRoomChanged(room);
@@ -104,8 +108,7 @@ class SocketIo {
 
         payload.room.messages = [];
         for (const session of dbFactory.getAllSessions()) {
-            const socket = this.wssChannels.get(session.socketId!);
-            socket?.emit(ChangeType.RoomAdded, payload);
+            session.socket?.emit(ChangeType.RoomAdded, payload);
         }
     }
 
@@ -118,32 +121,51 @@ class SocketIo {
 
         payload.room.messages = [];
         for (const session of dbFactory.getAllSessions()) {
-            const socket = this.wssChannels.get(session.socketId!);
-            socket?.emit(ChangeType.RoomDeleted, payload);
+            session.socket?.emit(ChangeType.RoomDeleted, payload);
         }
     }
 
     // Room modified
+    // notify everyone
     public notifyRoomChanged(room: RoomModel): void {
         const payload: RoomUpdatedModel = {
-            room: { ...room }
-        };
+            id: room.id,
+            owner: {...room.owner},
+            users: room.users.map(u => {
+                return {
+                    id: u.id,
+                    username: u.username
+                }
+            }),
+            title: room.title,
+            description: room.description,
+            messages: [] // no messages
+        }
 
-        payload.room.messages = [];
-        for (const session of dbFactory.getAllSessions()) {
-            const socket = this.wssChannels.get(session.socketId!);
-            socket?.emit(ChangeType.RoomUpdated, payload);
+        for (const session of dbFactory.sessions) {
+            session.socket?.emit(ChangeType.RoomUpdated, payload);
         }
     }
 
+    // selectively notify users in the room only.
     public notifyNewMessage(room: RoomModel): void {
         const payload: RoomUpdatedModel = {
-            room: { ...room }
-        };
-
-        const sessionIds = room.users.map(u => u.socketId);
-        for (const sessionId of sessionIds) {
-            // dbFactory.getSessionById(sessionId!)?.socket?.emit(ChangeType.RoomUpdated, payload);
+            id: room.id,
+            owner: {...room.owner},
+            users: room.users.map(u => {
+                return {
+                    id: u.id,
+                    username: u.username
+                }
+            }),
+            title: room.title,
+            description: room.description,
+            messages: [...room.messages]
+        }
+        for (const user of room.users) {
+            for (const socket of user.sockets) {
+                socket.emit(ChangeType.NewMessage, payload);
+            }
         }
     }
 }

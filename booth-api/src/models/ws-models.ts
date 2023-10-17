@@ -1,9 +1,12 @@
+import { Socket } from "socket.io";
 import { RoomModel } from "./room-model";
+import { UserModel } from "./user-model";
+import { MessageModel } from "./message-model";
 
-export type SessionModel = {
+export type Session = {
     sessionId: string,
-    userId: string,
-    socketId: string | null,
+    user: UserModel,
+    socket: Socket | null,
     roomId: string | null
 }
 
@@ -13,7 +16,7 @@ export enum ChangeType {
     RoomUpdated = 'room_updated',   // RoomUpdatedModel
     //    UserEntered = 'user_entered',   // UserEnterExitRoomModel
     //    UserExited = 'user_exited',     // UserEnterExitRoomModel
-    //    NewMessage = 'new_message',     // MessageModel
+       NewMessage = 'new_message',     // MessageModel
 }
 
 export type RoomChangedModel = {
@@ -22,5 +25,10 @@ export type RoomChangedModel = {
 }
 
 export type RoomUpdatedModel = {
-    room: RoomModel;
+    id: string;
+    owner: UserModel;
+    users: UserModel[];
+    title: string;
+    description: string;
+    messages: MessageModel[];
 }

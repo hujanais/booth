@@ -36,14 +36,19 @@ router.post('/login', async (req: Request, res: Response) => {
         const jwtToken = await _userService.login(payload);
         res.json(jwtToken);
     } catch (err: any) {
-        res.status(401).send(err.message);
+        res.status(500).send(err.message);
     }
 });
 
 // GET /users.  
 router.get('/users', async (req: Request, res: Response) => {
-    const users = await _userService.getAllUsers();
-    res.json(users);
+    try {
+        const users = await _userService.getAllUsers();
+        res.json(users);    
+    } catch (err:any) {
+        res.status(500).send(err.message);
+    }
 });
+
 
 export default router; 

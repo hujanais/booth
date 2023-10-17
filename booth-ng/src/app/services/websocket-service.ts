@@ -10,7 +10,7 @@ export class WebsocketService {
     private roomAdded$: Subject<RoomChangedModel> = new Subject<RoomChangedModel>();
     private roomDeleted$: Subject<RoomChangedModel> = new Subject<RoomChangedModel>();
     private roomUpdated$: Subject<RoomUpdatedModel> = new Subject<RoomUpdatedModel>();
-    private newMessage$: Subject<RoomChangedModel> = new Subject<RoomChangedModel>();
+    private newMessage$: Subject<RoomUpdatedModel> = new Subject<RoomUpdatedModel>();
 
     public connect(url: string, jwtToken: string) {
         this.socket = io(`${environment.wsUrl}?jwtToken=${jwtToken}`);
@@ -21,6 +21,7 @@ export class WebsocketService {
 
         this.socket.on('disconnect', () => {
             this.isConnected$.next(false);
+            this.socket?.close();
         })
 
         this.socket.on(ChangeType.RoomAdded, (payload: RoomChangedModel) => {
@@ -34,6 +35,10 @@ export class WebsocketService {
         this.socket.on(ChangeType.RoomUpdated, (payload: RoomUpdatedModel) => {
             this.roomUpdated$.next(payload);
         });
+
+        this.socket.on(ChangeType.NewMessage, (payload: RoomUpdatedModel) => {
+            this.newMessage$.next(payload);
+        })
     }
 
     public get isConnected(): Observable<boolean> {

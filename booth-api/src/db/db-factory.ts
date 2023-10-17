@@ -1,21 +1,16 @@
 import { RoomModel } from "../models/room-model";
 import { InternalUserModel, UserModel } from "../models/user-model";
-import { SessionModel } from "../models/ws-models";
-
+import { ChangeType, Session } from "../models/ws-models";
 import * as sqlite3 from "sqlite3";
 import { DBUsers } from "./db-users";
-import { DBRooms } from "./db-rooms";
-import { DBSessions } from "./user-sessions";
+import { DBRooms } from './db-rooms';
 
 class DBFactory {
     private db: sqlite3.Database;
     private dbUsers: DBUsers;
     private dbRooms: DBRooms;
-    private dbSessions: DBSessions;
-
-    private _users: InternalUserModel[] = [];
-
-    public rooms: RoomModel[] = [];
+    private _rooms: RoomModel[] = [];
+    private _sessions: Session[] = []; // sessionId to {user, socket} relationship is 1 to 1.
 
     constructor() {
         this.db = new sqlite3.Database('./db.sqlite', (error) => {
@@ -28,7 +23,6 @@ class DBFactory {
         console.log("Connection with SQLite has been established");
         this.dbUsers = new DBUsers(this.db);
         this.dbRooms = new DBRooms(this.db);
-        this.dbSessions = new DBSessions();
 
         this.dbUsers.createUsersTable().then(flag => {
             console.log('user-table created');
@@ -56,51 +50,47 @@ class DBFactory {
     }
 
     public getUserByName(username: string): Promise<InternalUserModel | null> {
-       return this.dbUsers.getUserByName(username);
+        return this.dbUsers.getUserByName(username);
     }
 
-    public async getAllRooms(): Promise<RoomModel[]> {
-       return this.dbRooms.getAllRooms();
+    public get rooms(): RoomModel[] {
+        return this._rooms;
     }
 
-    public async addRoom(room: RoomModel): Promise<number> {
-       return this.dbRooms.addRoom(room);
+    /** Sessions */
+
+    public get sessions(): Session[] {
+        return this._sessions;
     }
 
-    public async deleteRoom(roomId: string): Promise<string> {
-        return this.dbRooms.deleteRoom(roomId);
+    public addSession(session: Session): void {
+        const sess = this._sessions.find(s => s.socket?.id === session.sessionId);
+        if (sess) {
+            console.log('session already exists');
+            return;
+        }
+
+        this._sessions.push(session);
     }
 
-    public addSession(session: SessionModel): void {
-        this.dbSessions.addSession(session);
+    public getSessionById(sessionId: string): Session | undefined {
+        return this._sessions.find(s => s.sessionId === sessionId);
     }
 
-    public getSessionById(sessionId: string): SessionModel | undefined {
-        return this.dbSessions.getSessionById(sessionId);
+    public getSessionBySocketId(socketId: string): Session | undefined {
+        return this._sessions.find(s => s.socket?.id === socketId);
     }
-
-    public getSessionBySocketId(socketId: string): SessionModel | undefined  {
-        return this.dbSessions.getSessionBySocketId(socketId);
-    }
-
-    // public getSessionsByUserId(userIds: string[]): Session[] {
-    //     const sessions: Session[] = [];
-    //     for (const [key, session] of this._sessions) {
-    //         if (userIds.includes(session.user.id)) {
-    //             sessions.push(session);
-    //         }
-    //     }
-
-    //     return sessions;
-    // }
 
     // clean up as session is closed.
     public deleteSessionById(sessionId: string): void {
-       this.dbSessions.deleteSessionById(sessionId);
+        const idx = this._sessions.findIndex(s => s.sessionId === sessionId);
+        if (idx >= 0) {
+            this._sessions.splice(idx, 1);
+        }
     }
 
-    public getAllSessions(): SessionModel[] {
-        return this.dbSessions.getAllSessions();
+    public getAllSessions(): Session[] {
+        return [...this._sessions];
     }
 }
 

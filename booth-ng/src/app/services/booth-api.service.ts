@@ -1,6 +1,6 @@
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, ObservableNotification, Subject, catchError, of, switchMap, tap } from 'rxjs';
+import { Observable, Subject, tap, throwError } from 'rxjs';
 import { CreateRoomRequest, RoomModel } from '../models/room-model';
 import { WebsocketService } from './websocket-service';
 import { CreateMessageRequest, MessageModel } from '../models/message-model';
@@ -17,9 +17,11 @@ export class BoothApiService {
   private _wss: WebsocketService;
   private _jwtToken: string = '';
   private joinRoom$: Subject<RoomModel> = new Subject<RoomModel>();
+  private _isConnected = false;
 
   constructor(private http: HttpClient) {
     this._wss = new WebsocketService();
+    this._wss.isConnected.subscribe(flag => this._isConnected = flag);
   }
 
   public get wss(): WebsocketService {
@@ -32,6 +34,10 @@ export class BoothApiService {
 
   // return the jwttoken
   public login(username: string, password: string): Observable<string> {
+    if (this._isConnected) {
+      return throwError(() => new Error('you are already logged in'));
+    }
+
     return this.http.post<string>('/api/login', {
       username, password
     }).pipe(
@@ -55,11 +61,7 @@ export class BoothApiService {
   }
 
   public joinRoom(roomId: string): Observable<RoomModel> {
-    return this.http.post<RoomModel>(`/api/room/join/${roomId}`, null, { headers: this.headers }).pipe(
-      tap((resp: RoomModel) => {
-        this.joinRoom$.next(resp);
-      }),
-    );
+    return this.http.post<RoomModel>(`/api/room/join/${roomId}`, null, { headers: this.headers });
   }
 
   public exitRoom(roomId: string): Observable<RoomModel> {

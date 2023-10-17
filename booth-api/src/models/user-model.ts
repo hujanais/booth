@@ -1,3 +1,5 @@
+import { Socket } from "socket.io";
+
 export type InternalUserModel = {
     id: string;
     username: string;
@@ -6,9 +8,12 @@ export type InternalUserModel = {
 
 export type UserModel = {
     id: string;
-    socketId: string | null;
     username: string;
 }
+
+export type UserSessionModel = UserModel & {
+    sockets: Socket[]
+};
 
 export type LoginUserRequest = {
     username: string;
