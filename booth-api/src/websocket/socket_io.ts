@@ -53,7 +53,7 @@ class SocketIo {
             }
 
             console.log(`user ${user.username} on ws-channel ${socket.id} has joined`);
-            console.log('sessions', dbFactory.sessions.map(v => `${v.user.username}, ${v.sessionId}`));
+            console.log('sessions #', dbFactory.sessions.length);
 
             session.socket = socket;
 
@@ -70,7 +70,7 @@ class SocketIo {
                     console.log(`user ${dbFactory.getSessionById(sessionId)?.user.username} on ws-channel ${socket.id} has disconnected`);
                     dbFactory.deleteSessionById(sessionId);
 
-                    console.log('sessions', dbFactory.sessions.map(v => [v.user.username, v.sessionId]));
+                    console.log('sessions #', dbFactory.sessions.length);
 
                     // if user was in a room. remove and notify.                    
                     const userId = session.user.id;

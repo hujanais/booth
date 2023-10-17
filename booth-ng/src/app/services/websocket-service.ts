@@ -21,6 +21,7 @@ export class WebsocketService {
 
         this.socket.on('disconnect', () => {
             this.isConnected$.next(false);
+            this.socket?.close();
         })
 
         this.socket.on(ChangeType.RoomAdded, (payload: RoomChangedModel) => {

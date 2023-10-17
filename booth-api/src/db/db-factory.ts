@@ -83,7 +83,7 @@ class DBFactory {
 
     // clean up as session is closed.
     public deleteSessionById(sessionId: string): void {
-        const idx = this._sessions.findIndex(s => s.socket?.id === sessionId);
+        const idx = this._sessions.findIndex(s => s.sessionId === sessionId);
         if (idx >= 0) {
             this._sessions.splice(idx, 1);
         }
