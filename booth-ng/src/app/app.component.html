@@ -1,6 +1,17 @@
 <div class="div-root-container darkMode mat-app-background">
-  <app-login></app-login>
-  <app-create-room></app-create-room>
-  <app-rooms></app-rooms>
-  <app-room></app-room>
+  <mat-toolbar color="primary">
+    <h2>Welcome to the Booth Chats</h2>
+  </mat-toolbar>
+  <div class="flex-auto">
+    <app-login></app-login>
+  </div>
+  <div class="flex-auto">
+    <app-create-room></app-create-room>
+  </div>
+  <div class="rooms">
+    <app-rooms></app-rooms>
+  </div>
+  <div class="room">
+    <app-room></app-room>
+  </div>
 </div>

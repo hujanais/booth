@@ -1,17 +1,18 @@
 .div-login-container {
     display: flex;
-    align-items: center;
     width: 100%;
-
-    form {
-        width: 100%;
-    }
+    border: 1px solid orange;
 }
 
-.div-login-container-content {
+.form-row {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
     column-gap: 5px;
+
+    #login_btn {
+        height: 56px;
+        transform: translateY(-9px);
+    }
 }

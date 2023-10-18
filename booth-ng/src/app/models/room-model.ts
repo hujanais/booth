@@ -2,7 +2,7 @@ import { MessageModel } from "./message-model";
 import { UserModel } from "./user-model";
 
 export type RoomModel = {
-    id?: string;
+    id: string;
     owner: UserModel;
     users: UserModel[];
     title: string;

@@ -1,8 +1,22 @@
 .div-root-container {
-    display: grid;
-    grid-template-rows: auto auto 1fr 2fr;
+    display: flex;
+    flex-direction: column;
     height: 100%;
     width: 100%;
     overflow: hidden;
     row-gap: 5px;
+
+    .flex-auto {
+        border: 1px solid gray;
+    }
+
+    .rooms {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .room {
+        flex: 2;
+        overflow-y: auto;
+    }
 }

@@ -1,6 +1,6 @@
 <div>
     <form [formGroup]="form">
-        <div class="div-login-container">
+        <div class="div-form-container">
             <mat-form-field>
                 <mat-label>Room Title</mat-label>
                 <input matInput formControlName="title" required>
@@ -13,8 +13,9 @@
                 </mat-form-field>
             </div>
 
-            <button mat-raised-button (click)="createRoom()">Create new room</button>
+            <button id='create_btn' mat-raised-button (click)="createRoom()">Create new room</button>
             <div>{{message}}</div>
+            
         </div>
     </form>
 </div>
