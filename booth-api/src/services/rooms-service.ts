@@ -28,7 +28,7 @@ export class RoomService {
             messages: []
         };
 
-        dbFactory.rooms.push(room);
+        await dbFactory.addRoom(room);
         socketIo.notifyRoomAdded(room, dbFactory.rooms);
 
         const response: RoomUpdatedModel = {
@@ -55,11 +55,7 @@ export class RoomService {
         const session = dbFactory.getSessionById(sessionId);
         if (room.owner.id !== session?.user.id) throw new Error('Cannot delete a room that you are not the owner');
 
-        const idx = dbFactory.rooms.findIndex(r => r.id === roomId);
-        if (idx >= 0) {
-            dbFactory.rooms.splice(idx, 1);
-        }
-
+        await dbFactory.deleteRoom(room.id);
         socketIo.notifyRoomRemoved(room, dbFactory.rooms);
 
         const response: RoomUpdatedModel = {

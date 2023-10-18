@@ -29,7 +29,7 @@ export class UserService {
 
     // returns the bearer token
     public async login(payload: LoginUserRequest): Promise<string> {
-        if (payload.username && payload.password) {
+        if (!payload.username || !payload.password) {
             throw new Error('Invalid login request');
         }
 

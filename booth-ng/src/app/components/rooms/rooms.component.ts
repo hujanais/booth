@@ -1,9 +1,18 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy } from '@angular/core';
+import { MatTableDataSource } from '@angular/material/table';
 import { Subscription, filter, map } from 'rxjs';
 import { RoomModel } from 'src/app/models/room-model';
 import { RoomChangedModel, RoomUpdatedModel } from 'src/app/models/ws-models';
 import { BoothApiService } from 'src/app/services/booth-api.service';
+
+export interface PeriodicElement {
+  id: string;
+  title: string;
+  description: string;
+  owner: string;
+  numOfUsers: number;
+}
 
 @Component({
   selector: 'app-rooms',
@@ -12,6 +21,10 @@ import { BoothApiService } from 'src/app/services/booth-api.service';
 })
 export class RoomsComponent implements OnDestroy {
   private subscriptions = new Subscription();
+  columnHeaders: string[] = ['title', 'description', 'owner', 'nUsers', 'delete', 'join'];
+
+  dataSource: MatTableDataSource<PeriodicElement> = new MatTableDataSource();
+
   message: string = '';
   rooms: RoomModel[] = [];
 
@@ -26,6 +39,8 @@ export class RoomsComponent implements OnDestroy {
             } else {
               this.rooms.push(resp.room);
             }
+
+            this.updateTable();
           },
           error: (err: HttpErrorResponse) => { }
         }
@@ -40,6 +55,8 @@ export class RoomsComponent implements OnDestroy {
             if (idx >= 0) {
               this.rooms.splice(idx, 1);
             }
+
+            this.updateTable();
           },
           error: (err: HttpErrorResponse) => { }
         }
@@ -57,6 +74,8 @@ export class RoomsComponent implements OnDestroy {
               room.title = resp.title;
               room.description = resp.description;
             }
+
+            this.updateTable();
           },
           error: (err: HttpErrorResponse) => { }
         }
@@ -72,11 +91,8 @@ export class RoomsComponent implements OnDestroy {
     this.api.getAllRooms().subscribe(
       {
         next: (rooms: RoomModel[]) => {
-          this.rooms.length = 0;
-          for (const room of rooms) {
-            this.rooms.push(room);
-          }
-
+          this.rooms = [...rooms];
+          this.updateTable();
           this.message = '';
         },
         error: (err: HttpErrorResponse) => {
@@ -109,5 +125,21 @@ export class RoomsComponent implements OnDestroy {
         console.log('### joinRoom exception', err.message)
       }
     });
+  }
+
+  private updateTable(): void {
+    const newData: PeriodicElement[] = [];
+    this.dataSource.data = [];
+    for (const room of this.rooms) {
+      newData.push({
+        id: room.id,
+        title: room.title,
+        description: room.description,
+        owner: room.owner.username,
+        numOfUsers: room.users.length
+      });
+    }
+
+    this.dataSource.connect().next(newData);
   }
 }

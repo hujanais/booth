@@ -1,8 +1,10 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import {MatListModule} from '@angular/material/list';
+import { MatListModule } from '@angular/material/list';
 import { MatCardModule } from '@angular/material/card';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTable, MatTableModule } from '@angular/material/table';
 
 @NgModule({
   declarations: [],
@@ -11,11 +13,15 @@ import { MatCardModule } from '@angular/material/card';
     MatButtonModule,
     MatListModule,
     MatCardModule,
+    MatToolbarModule,
+    MatTableModule
   ],
   exports: [
     MatButtonModule,
     MatListModule,
-    MatCardModule
+    MatCardModule, 
+    MatToolbarModule,
+    MatTableModule
   ]
 })
 export class AngularMaterialModule { }
