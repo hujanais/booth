@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 export type DBRoomModel = {
     id: string,
     ownerId: string,
+    ownerName: string,  // this will be retrieved via join with users' table.
     title: string,
     description: string
 }
@@ -22,6 +23,7 @@ export class DBRooms {
             const sql = `
             CREATE TABLE IF NOT EXISTS rooms (
                 id TEXT PRIMARY KEY,
+                ownerId TEXT,
                 title TEXT,
                 description TEXT
             )
@@ -54,7 +56,9 @@ export class DBRooms {
     public async getAllRooms(): Promise<DBRoomModel[]> {
 
         const sql = `
-            SELECT * FROM rooms
+            SELECT rooms.id, rooms.ownerId, rooms.title, rooms.description, users.username FROM rooms
+            JOIN users
+            ON rooms.ownerId = users.id
         `;
 
         const rooms: DBRoomModel[] = await new Promise((resolve, reject) => {
