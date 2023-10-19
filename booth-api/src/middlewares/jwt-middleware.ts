@@ -5,7 +5,7 @@ const jwtUtility = new JWTUtility(process.env.JWT_SECRET || '');
 
 export const jwtHandler = (req: Request, res: Response, next: NextFunction) => {
 
-    const allowedUrls = ['/api/login', '/api/users', '/api/register'];
+    const allowedUrls = ['/api/user/login', '/api/user/all', '/api/user/register'];
     if (allowedUrls.includes(req.originalUrl)) {
         next();
         return;

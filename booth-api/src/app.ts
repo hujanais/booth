@@ -43,4 +43,4 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use("/api", roomRouter);
 app.use("/api", messageRouter);
-app.use('/api', userRouter);
+app.use('/api/user', userRouter);

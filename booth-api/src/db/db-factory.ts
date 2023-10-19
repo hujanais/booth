@@ -65,6 +65,10 @@ class DBFactory {
         return this.dbUsers.addUser(user);
     }
 
+    public deleteUser(userId: string): Promise<number> {
+        return this.dbUsers.deleteUser(userId);
+    }
+
     public getUserByName(username: string): Promise<InternalUserModel | null> {
         return this.dbUsers.getUserByName(username);
     }

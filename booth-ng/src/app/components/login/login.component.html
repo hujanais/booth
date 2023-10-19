@@ -1,36 +1,20 @@
 <div class="div-login-container">
-    <div class="div-content">
-        <form [formGroup]="loginForm">
-            <div class="form-row">
-                <mat-form-field>
-                    <mat-label>Username</mat-label>
-                    <input matInput formControlName="username" required>
-                </mat-form-field>
+    <form [formGroup]="loginForm">
+        <div class="form-row">
+            <mat-form-field>
+                <mat-label>Username</mat-label>
+                <input matInput formControlName="username" required>
+            </mat-form-field>
 
-                <mat-form-field>
-                    <mat-label>Password</mat-label>
-                    <input matInput formControlName="password" required>
-                </mat-form-field>
+            <mat-form-field>
+                <mat-label>Password</mat-label>
+                <input matInput formControlName="password" required>
+            </mat-form-field>
 
-                <button id='login_btn' mat-raised-button (click)="login()">Login</button>
-                <div>{{message}}</div>
-                <div>IsConnected: {{isConnected}}</div>
-            </div>
-            <!-- <div class="div-login-container-content">
-                <mat-form-field>
-                    <mat-label>Username</mat-label>
-                    <input matInput formControlName="username" required>
-                </mat-form-field>
-
-                <mat-form-field>
-                    <mat-label>Password</mat-label>
-                    <input matInput formControlName="password" required>
-                </mat-form-field>
-
-                <button mat-raised-button (click)="login()">Login</button>
-                <div>{{message}}</div>
-                <div>IsConnected: {{isConnected}}</div>
-            </div> -->
-        </form>
-    </div>
+            <button id='login_btn' mat-raised-button (click)="login()">Login</button>
+            <button id="login_btn" mat-flat-button (click)="registerUser()">Register</button>
+            <div>{{message}}</div>
+            <div>IsConnected: {{isConnected}}</div>
+        </div>
+    </form>
 </div>
