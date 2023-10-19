@@ -15,6 +15,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input'
 import { RoomComponent } from './components/room/room.component';
 import { ChatBubbleComponent } from './components/chat-bubble/chat-bubble.component';
+import { RegistrationComponent } from './components/registration/registration.component';
 
 @NgModule({
   declarations: [
@@ -23,7 +24,8 @@ import { ChatBubbleComponent } from './components/chat-bubble/chat-bubble.compon
     RoomsComponent,
     CreateRoomComponent,
     RoomComponent,
-    ChatBubbleComponent
+    ChatBubbleComponent,
+    RegistrationComponent
   ],
   imports: [
     BrowserModule,

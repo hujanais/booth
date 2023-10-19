@@ -7,6 +7,7 @@ const router = express.Router();
 
 const _userService = new UserService();
 
+// POST api/user/register
 router.post('/register', async (req: Request, res: Response) => {
     const { body } = req;
     const payload: LoginUserRequest = body as LoginUserRequest;
@@ -23,7 +24,22 @@ router.post('/register', async (req: Request, res: Response) => {
     }
 })
 
-// login. POST /api/login
+// DELETE api/user/:userId
+router.delete('/:userId', async (req:Request, res: Response) => {
+    const userId = req.params.userId;
+
+    try {
+        const nRows = await _userService.deleteUser(userId);
+        if(nRows > 0) {
+            console.log(`${userId} has been deleted`);
+        }
+        res.json(nRows);
+    } catch (err: any) {
+        res.status(500).send(err.message);
+    }
+});
+
+// login. POST /api/user/login
 router.post('/login', async (req: Request, res: Response) => {
     const { body } = req;
     const payload: LoginUserRequest = body as LoginUserRequest;
@@ -40,8 +56,8 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 });
 
-// GET /users.  
-router.get('/users', async (req: Request, res: Response) => {
+// GET /users/all.  
+router.get('/all', async (req: Request, res: Response) => {
     try {
         const users = await _userService.getAllUsers();
         res.json(users);    

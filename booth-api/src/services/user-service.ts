@@ -56,8 +56,8 @@ export class UserService {
 
     }
 
-    public unregister() {
-
+    public async deleteUser(userId:string): Promise<number> {
+        return dbFactory.deleteUser(userId);
     }
 
     public update() {

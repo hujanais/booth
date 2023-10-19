@@ -1,8 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { Subscription } from 'rxjs';
 import { BoothApiService } from 'src/app/services/booth-api.service';
+import { RegistrationComponent } from '../registration/registration.component';
 
 @Component({
   selector: 'app-login',
@@ -17,7 +19,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   message: string = '';
   isConnected = false;
 
-  constructor(private fb: FormBuilder, private api: BoothApiService) {
+  constructor(private fb: FormBuilder, private dialog: MatDialog, private api: BoothApiService) {
     this.loginForm = this.fb.group({
       username: [''],
       password: ['']
@@ -51,6 +53,13 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
       }
     })
+  }
+
+  registerUser(): void {
+    this.dialog.open(RegistrationComponent, {
+      width: '800px',
+      height: '240px'
+    });
   }
 
   private get usernameControl(): AbstractControl<string> {

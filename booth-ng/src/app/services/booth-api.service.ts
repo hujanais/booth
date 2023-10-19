@@ -4,6 +4,9 @@ import { Observable, Subject, tap, throwError } from 'rxjs';
 import { CreateRoomRequest, RoomModel } from '../models/room-model';
 import { WebsocketService } from './websocket-service';
 import { CreateMessageRequest, MessageModel } from '../models/message-model';
+import { environment } from 'src/environments/environment';
+
+const WSURL = environment.wsUrl;
 
 export type LoginResponse = {
   isLoggedIn: boolean;
@@ -38,11 +41,11 @@ export class BoothApiService {
       return throwError(() => new Error('you are already logged in'));
     }
 
-    return this.http.post<string>('/api/login', {
+    return this.http.post<string>('/api/user/login', {
       username, password
     }).pipe(
       tap((jwtToken) => {
-        this._wss.connect('ws://localhost:3001', jwtToken);
+        this._wss.connect(WSURL, jwtToken);
         this._jwtToken = jwtToken;
       })
     );

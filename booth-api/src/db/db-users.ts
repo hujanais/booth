@@ -103,4 +103,22 @@ export class DBUsers {
             });
         });
     }
+
+    public deleteUser(userId: string): Promise<number> {
+        return new Promise((resolve, reject) => {
+            const sql = `
+            DELETE FROM users
+            WHERE id = ?
+        `;
+            this.db.run(sql, [userId], function (error) {
+                if (error) {
+                    console.error('Error inserting user:', error.message);
+                    reject(-1);
+                } else {
+                    console.log(`Row(s) deleted: ${this.changes}`);
+                    resolve(this.changes);
+                }
+            });
+        });
+    }
 }

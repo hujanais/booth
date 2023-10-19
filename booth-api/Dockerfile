@@ -1,3 +1,4 @@
+# for ARM SBC
 FROM node:18-bullseye-slim
 
 # Set the working directory

@@ -7,7 +7,6 @@ import { RoomModel } from '../models/room-model';
 import { RoomChangedModel, ChangeType, RoomUpdatedModel } from '../models/ws-models';
 import { JWTUtility } from '../utilities/jwt-utility';
 import { v4 as uuidv4 } from 'uuid';
-import { UserSessionModel } from '../models/user-model';
 
 const WEBSOCKET_CORS = {
     origin: "*",

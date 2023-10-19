@@ -56,13 +56,14 @@ export class DBRooms {
     public async getAllRooms(): Promise<DBRoomModel[]> {
 
         const sql = `
-            SELECT rooms.id, rooms.ownerId, rooms.title, rooms.description, users.username FROM rooms
+            SELECT rooms.id, rooms.ownerId, rooms.title, rooms.description, users.username AS ownerName
+            FROM rooms
             JOIN users
             ON rooms.ownerId = users.id
         `;
 
         const rooms: DBRoomModel[] = await new Promise((resolve, reject) => {
-            this.db.all(sql, (err, rows: DBRoomModel[]) => {
+            this.db.all(sql, (err, rows: any) => {
                 if (err) reject(err);
 
                 resolve(rows);
@@ -86,7 +87,7 @@ export class DBRooms {
                     reject(-1);
                 } else {
                     console.log(`Inserted a row with the ID: ${this.lastID}`);
-                    resolve(this.lastID);
+                    resolve(1);
                 }
             });
         });
