@@ -5,6 +5,9 @@ import { createTheme } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import HeaderComponent from './Components/Header/Header';
 import LoginComponent from './Components/Login/Login';
+import { RoomsComponent } from './Components/Rooms/RoomsComponent';
+import { CreateRoomComponent } from './Components/CreateRoom/CreateRoomComponent';
+import { RoomComponent } from './Components/Room/RoomComponent';
 
 const darkTheme = createTheme({
   palette: {
@@ -19,9 +22,13 @@ function App() {
       <div className='app-container'>
         <HeaderComponent></HeaderComponent>
         <LoginComponent></LoginComponent>
-        <div>Create Rooms</div>
-        <div>Rooms</div>
-        <div>Room</div>
+        <CreateRoomComponent></CreateRoomComponent>
+        <div className='div-rooms'>
+        <RoomsComponent></RoomsComponent>
+        </div>
+        <div className='div-room'>
+          <RoomComponent></RoomComponent>
+        </div>
       </div>
     </ThemeProvider>
   );

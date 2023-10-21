@@ -1,13 +1,20 @@
-import { LoginRequest } from "../Models/LoginRequest";
+import { Observable, Subject } from "rxjs";
+import { CreateRoomRequest, RoomModel } from "../Models/room-model";
+import { LoginUserRequest } from "../Models/user-model";
+import { WssService } from "./Wss-Service";
+import { RoomChangedModel } from "../Models/ws-models";
 
 const SERVER_URL = 'http://localhost:3000'
 
 export class BoothApi {
 
     private static _instance: BoothApi;
-    private static jwtToken: string;
+    private jwtToken: string = '';
+    private wss: WssService = new WssService();
 
-    private constructor() {}
+    private constructor() {
+    }
+
     public static get instance(): BoothApi {
         if (!this._instance) {
             this._instance = new BoothApi();
@@ -16,17 +23,113 @@ export class BoothApi {
         return this._instance;
     }
 
-    public setJwtToken(token: string): void {
-        BoothApi.jwtToken = token;
+    public get wssInstance(): WssService {
+        return this.wss;
     }
 
     // POST /api/user/register
-    async login(req: LoginRequest): Promise<Response>{
-        return await fetch(`${SERVER_URL}/api/user/login`, { 
-            method: 'POST', 
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(req) });
+    async login(req: LoginUserRequest): Promise<void> {
+        try {
+            const resp = await fetch(`${SERVER_URL}/api/user/login`, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(req)
+            });
+
+            const json = await resp.json();
+            if (!resp.ok) {
+                throw Error(`${resp.status}. ${json}`)
+            }
+
+            this.jwtToken = json;
+            this.wss.connect('http://localhost:3001', this.jwtToken);
+        } catch (err) {
+            throw (err);
+        }
+    }
+
+    async getAllRooms(): Promise<RoomModel[]> {
+        try {
+            const resp = await fetch(`${SERVER_URL}/api/rooms`, {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${this.jwtToken}`
+                }
+            });
+
+            const json = await resp.json();
+            if (!resp.ok) {
+                throw Error(`${resp.status}. ${json}`)
+            }
+
+            return json;
+        } catch (err) {
+            throw (err);
+        }
+
+    }
+
+    async createRoom(newRoom: CreateRoomRequest): Promise<void> {
+        try {
+            const resp = await fetch(`${SERVER_URL}/api/room`, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${this.jwtToken}`
+                },
+                body: JSON.stringify(newRoom)
+            });
+
+            const json = await resp.json();
+            if (!resp.ok) {
+                throw Error(`${resp.status}. ${json}`)
+            }
+            return json;
+        } catch (err) {
+            throw (err);
+        }
+    }
+
+    async deleteRoom(roomId: string): Promise<RoomModel> {
+        try {
+            const resp = await fetch(`${SERVER_URL}/api/room/${roomId}`, {
+                method: 'DELETE',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${this.jwtToken}`
+                }
+            });
+
+            const json = await resp.json();
+            if (!resp.ok) {
+                throw Error(`${resp.status}. ${json}`)
+            }
+            return json;
+        } catch (err) {
+            throw (err);
+        }
+    }
+
+    async joinRoom(roomId: string): Promise<RoomModel> {
+        try {
+            const resp = await fetch(`${SERVER_URL}/api/room/join/${roomId}`, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${this.jwtToken}`
+                }
+            });
+
+            const json = await resp.json();
+            if (!resp.ok) {
+                throw Error(`${resp.status}. ${json}`)
+            }
+            return json;
+        } catch (err) {
+            throw (err);
+        }
     }
 }

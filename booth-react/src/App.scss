@@ -4,6 +4,16 @@
 
   display: flex;
   flex-direction: column;
+
+  .div-rooms {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .div-room {
+    flex: 2;
+    overflow-y: hidden;
+  }
 }
 
 .app-container > div {

@@ -1,0 +1,19 @@
+.div-room-container {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
+
+    &__header {
+        display:flex;
+        flex-direction: row;
+        column-gap: 5px;
+        align-items: center;
+    }
+
+    &__chat {
+        flex:1;
+        height: 100%;
+        display:flex;
+        overflow-y: auto;
+    }
+}
