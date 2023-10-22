@@ -22,7 +22,7 @@ FROM nginx:1.24.0-bullseye AS serve
 # copy the build output to replace the default nginx contents
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 
-COPY --from=build /usr/src/app/dist/booth-ng /var/www/html/kiosk-ng
+COPY --from=build /usr/src/app/build /var/www/html/booth-react
 
 # EXPORT port 80
 EXPOSE 80
