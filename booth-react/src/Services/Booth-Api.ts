@@ -3,6 +3,7 @@ import { CreateRoomRequest, RoomModel } from "../Models/room-model";
 import { LoginUserRequest } from "../Models/user-model";
 import { WssService } from "./Wss-Service";
 import { RoomChangedModel } from "../Models/ws-models";
+import { CreateMessageRequest } from "../Models/message-model";
 
 const SERVER_URL = 'http://localhost:3000'
 
@@ -121,6 +122,47 @@ export class BoothApi {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${this.jwtToken}`
                 }
+            });
+
+            const json = await resp.json();
+            if (!resp.ok) {
+                throw Error(`${resp.status}. ${json}`)
+            }
+            return json;
+        } catch (err) {
+            throw (err);
+        }
+    }
+
+    async exitRoom(roomId: string): Promise<RoomModel> {
+        try {
+            const resp = await fetch(`${SERVER_URL}/api/room/join/${roomId}`, {
+                method: 'DELETE',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${this.jwtToken}`
+                }
+            });
+
+            const json = await resp.json();
+            if (!resp.ok) {
+                throw Error(`${resp.status}. ${json}`)
+            }
+            return json;
+        } catch (err) {
+            throw (err);
+        }
+    }
+
+    async sendMessage(payload: CreateMessageRequest) {
+        try {
+            const resp = await fetch(`${SERVER_URL}/api/message`, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${this.jwtToken}`
+                },
+                body: JSON.stringify(payload)
             });
 
             const json = await resp.json();

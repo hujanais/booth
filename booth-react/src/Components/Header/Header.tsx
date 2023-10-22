@@ -18,7 +18,6 @@ export default function HeaderComponent() {
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                         Booth Chat
                     </Typography>
-                    <Button color="inherit">Login</Button>
                 </Toolbar>
             </AppBar>
         </Box>
