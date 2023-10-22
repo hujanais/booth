@@ -12,11 +12,16 @@ export const RoomsComponent = () => {
 
   const [message, setMessage] = useState('');
   const [rooms, setRooms] = useState<RoomModel[]>([]);
+  const [isInRoom, setIsInRoom] = useState<boolean>(false);
   const api = BoothApi.instance;
 
   useEffect(() => {
     console.log('useEffect');
     const subscriptions = new Subscription();
+
+    subscriptions.add(api.isInRoom.subscribe({
+      next: (flag) => setIsInRoom(flag)
+    }))
 
     subscriptions.add(api.wssInstance.roomAdded.subscribe({
       next: (data: RoomChangedModel) => {
@@ -113,7 +118,7 @@ export const RoomsComponent = () => {
                   <TableCell align='right'>{row.owner.username}</TableCell>
                   <TableCell align='right'>{row.users.length}</TableCell>
                   <TableCell align='right'>
-                    <IconButton onClick={() => joinRoom(row.id)} size="large">
+                    <IconButton disabled={isInRoom} onClick={() => joinRoom(row.id)} size="large">
                       <Chat />
                     </IconButton>
                     <IconButton onClick={() => deleteRoom(row.id)} size='large'>

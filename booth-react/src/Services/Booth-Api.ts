@@ -1,17 +1,19 @@
-import { Observable, Subject } from "rxjs";
 import { CreateRoomRequest, RoomModel } from "../Models/room-model";
 import { LoginUserRequest } from "../Models/user-model";
 import { WssService } from "./Wss-Service";
-import { RoomChangedModel, RoomUpdatedModel } from "../Models/ws-models";
+import { RoomUpdatedModel } from "../Models/ws-models";
 import { CreateMessageRequest } from "../Models/message-model";
+import { Observable, Subject } from "rxjs";
 
-const SERVER_URL = 'http://localhost:3000'
+const SERVER_URL = process.env.SERVER_ENDPOINT || 'http://localhost:3000'
+const SERVER_WSS_URL = process.env.SERVER_WSS_ENDPOINT || 'http://localhost:3001';
 
 export class BoothApi {
 
     private static _instance: BoothApi;
     private jwtToken: string = '';
     private wss: WssService = new WssService();
+    private isInRoom$ = new Subject<boolean>();
 
     private constructor() {
     }
@@ -26,6 +28,10 @@ export class BoothApi {
 
     public get wssInstance(): WssService {
         return this.wss;
+    }
+
+    public get isInRoom(): Observable<boolean> {
+        return this.isInRoom$.asObservable();
     }
 
     // POST /api/user/register
@@ -45,7 +51,7 @@ export class BoothApi {
             }
 
             this.jwtToken = json;
-            this.wss.connect('http://localhost:3001', this.jwtToken);
+            this.wss.connect(SERVER_WSS_URL, this.jwtToken);
         } catch (err) {
             throw (err);
         }
@@ -128,6 +134,8 @@ export class BoothApi {
             if (!resp.ok) {
                 throw Error(`${resp.status}. ${json}`)
             }
+
+            this.isInRoom$.next(true);
             return json;
         } catch (err) {
             throw (err);
@@ -148,6 +156,8 @@ export class BoothApi {
             if (!resp.ok) {
                 throw Error(`${resp.status}. ${json}`)
             }
+
+            this.isInRoom$.next(false);
             return json;
         } catch (err) {
             throw (err);
