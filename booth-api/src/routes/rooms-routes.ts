@@ -20,7 +20,7 @@ router.post('/room/join/:roomId', async (req: Request, res: Response) => {
         console.log(`${sessionId} has joined the room`);
         res.json(resp);
     } catch (err: any) {
-        res.status(500).send(err.message);
+        res.status(500).json(err.message);
     }
 });
 
@@ -34,7 +34,7 @@ router.delete('/room/join/:roomId', async (req: Request, res: Response) => {
         console.log(`${sessionId} has exited the room`);
         res.json(resp);
     } catch (err: any) {
-        res.status(500).send(err.message);
+        res.status(500).json(err.message);
     }
 });
 
@@ -50,17 +50,17 @@ router.post('/room', async (req: Request, res: Response) => {
         console.log(`${sessionId} has created a new room ${resp.id}`);
         res.json(resp);
     } catch (err: any) {
-        res.status(500).send(err.message);
+        res.status(500).json(err.message);
     }
 })
 
 // Get all rooms.  GET /api/rooms
 router.get('/rooms', async (req: Request, res: Response) => {
     try {
-        const allRooms = await roomService.getAllRooms();
+        const allRooms = await roomService.getAllRooms();   // return RoomUpdatedModel
         res.json(allRooms);
     } catch (err: any) {
-        res.status(500).send(err.message);
+        res.status(500).json(err.message);
     }
 })
 
@@ -75,7 +75,7 @@ router.put('/room', async (req: Request, res: Response) => {
         const resp = await roomService.updateRoom(sessionId, updateRoom);
         res.json(resp);
     } catch (err: any) {
-        res.status(500).send(err.message);
+        res.status(500).json(err.message);
     }
 })
 
@@ -88,7 +88,7 @@ router.delete('/room/:roomId', async (req: Request, res: Response) => {
         console.log(`${sessionId} has deleted a room ${roomId}`);
         res.json(room);
     } catch (err: any) {
-        res.status(500).send(err.message);
+        res.status(500).json(err.message);
     }
 })
 

@@ -53,7 +53,7 @@ export const RoomsComponent = () => {
 
   const doRefresh = async () => {
     try {
-      const allRooms: RoomModel[] = await api.getAllRooms();
+      const allRooms: RoomUpdatedModel[] = await api.getAllRooms();
       setRooms([...allRooms])
       setMessage('');
     } catch (err) {

@@ -18,6 +18,6 @@ export const jwtHandler = (req: Request, res: Response, next: NextFunction) => {
         res.locals = { ...res.locals, sessionId };
         next();
     } catch (err: any) {
-        res.status(401).send(err.message);
+        res.status(401).json(err.message);
     }
 }

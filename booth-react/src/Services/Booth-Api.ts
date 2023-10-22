@@ -2,7 +2,7 @@ import { Observable, Subject } from "rxjs";
 import { CreateRoomRequest, RoomModel } from "../Models/room-model";
 import { LoginUserRequest } from "../Models/user-model";
 import { WssService } from "./Wss-Service";
-import { RoomChangedModel } from "../Models/ws-models";
+import { RoomChangedModel, RoomUpdatedModel } from "../Models/ws-models";
 import { CreateMessageRequest } from "../Models/message-model";
 
 const SERVER_URL = 'http://localhost:3000'
@@ -51,7 +51,7 @@ export class BoothApi {
         }
     }
 
-    async getAllRooms(): Promise<RoomModel[]> {
+    async getAllRooms(): Promise<RoomUpdatedModel[]> {
         try {
             const resp = await fetch(`${SERVER_URL}/api/rooms`, {
                 method: 'GET',
