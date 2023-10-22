@@ -15,8 +15,11 @@ As a developer, most of the time we are siloed into certain aspects of projects 
 4.  Initially I used raw websockets but decided to go back to socket.io but I do not use the room/session features in socket.io because I want to work on session management concepts by myself.
 5.  I am using base JWT-tokens and encrypted passwords which are handled in a hand-rolled middleware.  I didn't use express-session-jwt just because I am more interested in practicing my own coding.
 
-### Front-End
+### Front-End prototype with Angular16
 1.  The front-end is not the focus of this application.  I just built a simple front-end client to exercise the application using Angular-16.  I just chose Ng because that is just my web go-to framework.  I did try to make the UI look "decent" using Angular Material.
+
+### React Front-End
+1.  Like an itch that I need to scratch, I did a 1-day hackathon and built a React Front-End using MUI for styling.  Now the project feels completed.
 
 # Usage
 
