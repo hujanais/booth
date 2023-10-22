@@ -6,8 +6,22 @@ import { RoomUpdatedModel } from "../models/ws-models";
 
 export class RoomService {
 
-    public async getAllRooms(): Promise<RoomModel[]> {
-        return dbFactory.rooms;
+    public async getAllRooms(): Promise<RoomUpdatedModel[]> {
+        return dbFactory.rooms.map(r => {
+            return {
+                id: r.id,
+                owner: {...r.owner},
+                users: r.users.map(u => {
+                    return {
+                        id: u.id,
+                        username: u.username
+                    }
+                }),
+                title: r.title,
+                description: r.description,
+                messages: [...r.messages]
+            }
+        });
     }
 
     public async createRoom(sessionId: string, payload: CreateRoomRequest): Promise<RoomUpdatedModel> {
@@ -33,7 +47,7 @@ export class RoomService {
 
         const response: RoomUpdatedModel = {
             id: room.id,
-            owner: {...room.owner},
+            owner: { ...room.owner },
             users: room.users.map(u => {
                 return {
                     id: u.id,
@@ -60,7 +74,7 @@ export class RoomService {
 
         const response: RoomUpdatedModel = {
             id: room.id,
-            owner: {...room.owner},
+            owner: { ...room.owner },
             users: room.users.map(u => {
                 return {
                     id: u.id,
@@ -90,7 +104,7 @@ export class RoomService {
 
         const response: RoomUpdatedModel = {
             id: foundRoom.id,
-            owner: {...foundRoom.owner},
+            owner: { ...foundRoom.owner },
             users: foundRoom.users.map(u => {
                 return {
                     id: u.id,
@@ -121,7 +135,7 @@ export class RoomService {
         }
 
         const connectedUser = room.users.find(u => u.id === user.id);
-        if (!connectedUser)  {
+        if (!connectedUser) {
             room.users.push({
                 id: user.id,
                 username: user.username,
@@ -147,7 +161,7 @@ export class RoomService {
 
         const response: RoomUpdatedModel = {
             id: room.id,
-            owner: {...room.owner},
+            owner: { ...room.owner },
             users: room.users.map(u => {
                 return {
                     id: u.id,
@@ -167,8 +181,8 @@ export class RoomService {
         if (!room) throw new Error(`The room ${roomId} is not found`);
 
         const session = dbFactory.getSessionById(sessionId);
-        if(!session) throw new Error('exit room failed because sessionId is invalid');
-        const socketId = session.socket?.id;        
+        if (!session) throw new Error('exit room failed because sessionId is invalid');
+        const socketId = session.socket?.id;
 
         // get the user that exited.
         const userIdx = room.users.findIndex(u => u.id === session.user.id);
@@ -199,7 +213,7 @@ export class RoomService {
 
         const response: RoomUpdatedModel = {
             id: room.id,
-            owner: {...room.owner},
+            owner: { ...room.owner },
             users: room.users.map(u => {
                 return {
                     id: u.id,

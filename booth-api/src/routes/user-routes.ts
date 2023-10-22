@@ -13,14 +13,14 @@ router.post('/register', async (req: Request, res: Response) => {
     const payload: LoginUserRequest = body as LoginUserRequest;
 
     if (!payload.username || !payload.password) {
-        res.status(500).send('invalid username or password');
+        res.status(500).json('invalid username or password');
     }
 
     try {
         await _userService.register(payload);
-        res.send('Thanks for registering');
+        res.json('Thanks for registering');
     } catch (err: any) {
-        res.status(500).send(err.message);
+        res.status(500).json(err.message);
     }
 })
 
@@ -35,7 +35,7 @@ router.delete('/:userId', async (req:Request, res: Response) => {
         }
         res.json(nRows);
     } catch (err: any) {
-        res.status(500).send(err.message);
+        res.status(500).json(err.message);
     }
 });
 
@@ -45,14 +45,14 @@ router.post('/login', async (req: Request, res: Response) => {
     const payload: LoginUserRequest = body as LoginUserRequest;
 
     if (!payload || !payload.username || !payload.password) {
-        res.status(401).send('Unauthorized');
+        res.status(401).json('Unauthorized');
     }
 
     try {
         const jwtToken = await _userService.login(payload);
         res.json(jwtToken);
     } catch (err: any) {
-        res.status(500).send(err.message);
+        res.status(500).json(err.message);
     }
 });
 
@@ -62,7 +62,7 @@ router.get('/all', async (req: Request, res: Response) => {
         const users = await _userService.getAllUsers();
         res.json(users);    
     } catch (err:any) {
-        res.status(500).send(err.message);
+        res.status(500).json(err.message);
     }
 });
 

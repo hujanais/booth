@@ -20,7 +20,7 @@ router.post('/message', async (req: Request, res: Response) => {
         const resp = await messageService.postMessage(sessionId, payload);
         res.json(resp);
     } catch (err: any) {
-        res.status(500).send(err.message);
+        res.status(500).json(err.message);
     }
 })
 
@@ -35,7 +35,7 @@ router.put('/message/:msgId', async (req: Request, res: Response) => {
         const resp = await messageService.updateMessage(payload);
         res.json(resp);
     } catch (err: any) {
-        res.status(500).send(err.message);
+        res.status(500).json(err.message);
     }
 })
 
@@ -46,7 +46,7 @@ router.delete('/message/:msgId', async (req: Request, res: Response) => {
         const resp = await messageService.deleteMessage(userId, msgId);
         res.json(resp);
     } catch (err: any) {
-        res.status(500).send(err.message);
+        res.status(500).json(err.message);
     }
 })
 
