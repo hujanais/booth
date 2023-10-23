@@ -5,8 +5,8 @@ import { RoomUpdatedModel } from "../Models/ws-models";
 import { CreateMessageRequest } from "../Models/message-model";
 import { Observable, Subject } from "rxjs";
 
-const SERVER_URL = process.env.SERVER_ENDPOINT || 'http://localhost:3000'
-const SERVER_WSS_URL = process.env.SERVER_WSS_ENDPOINT || 'http://localhost:3001';
+const SERVER_URL = process.env.REACT_APP_SERVER_ENDPOINT || 'http://localhost:3000'
+const SERVER_WSS_URL = process.env.REACT_APP_WSS_ENDPOINT || 'http://localhost:3001';
 
 export class BoothApi {
 
