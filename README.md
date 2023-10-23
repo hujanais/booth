@@ -1,6 +1,6 @@
 # Booth-Chat
 
-Booth-Chat is a hackathon to build a chat app to build a full-stack application from the ground up with minimal frameworks.  I chose this project because it encapsulates the basics of a cloud-based multi-client application.  This application focuses on the server and not the UI.  However, like all full-stack apps, a minimal front-end client is included to facilitate testing and usability.
+Booth-Chat is a hackathon to build a chat app to build a full-stack application from the ground up with minimal frameworks.  I chose this project because it encapsulates the basics of a cloud-based multi-tenant application.  This application focuses on the server and not the UI.  However, like all full-stack apps, a minimal front-end client is included to facilitate testing and usability.
 
 # What I want to get out of this?
 
