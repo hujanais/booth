@@ -1,4 +1,4 @@
-[Slideshow](%3Ciframe%20src=%22https://docs.google.com/presentation/d/e/2PACX-1vQqJSGU58pxNDpSsdahUcRqfcF60IwiMWhqs_1TPYbmlezl8783APbvpD85r5ggPjO6ViTwEjh7LF_Z/embed?start=false&loop=false&delayms=3000%22%20frameborder=%220%22%20width=%22960%22%20height=%22569%22%20allowfullscreen=%22true%22%20mozallowfullscreen=%22true%22%20webkitallowfullscreen=%22true%22%3E%3C/iframe%3E)
+[SlideDeck](https://docs.google.com/presentation/d/e/2PACX-1vQqJSGU58pxNDpSsdahUcRqfcF60IwiMWhqs_1TPYbmlezl8783APbvpD85r5ggPjO6ViTwEjh7LF_Z/pub?start=false&loop=false&delayms=10000)
 
 # Booth-Chat
 
