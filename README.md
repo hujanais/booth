@@ -1,3 +1,5 @@
+[Slideshow](%3Ciframe%20src=%22https://docs.google.com/presentation/d/e/2PACX-1vQqJSGU58pxNDpSsdahUcRqfcF60IwiMWhqs_1TPYbmlezl8783APbvpD85r5ggPjO6ViTwEjh7LF_Z/embed?start=false&loop=false&delayms=3000%22%20frameborder=%220%22%20width=%22960%22%20height=%22569%22%20allowfullscreen=%22true%22%20mozallowfullscreen=%22true%22%20webkitallowfullscreen=%22true%22%3E%3C/iframe%3E)
+
 # Booth-Chat
 
 Booth-Chat is a hackathon to build a chat app to build a full-stack application from the ground up with minimal frameworks.  I chose this project because it encapsulates the basics of a cloud-based multi-tenant application.  This application focuses on the server and not the UI.  However, like all full-stack apps, a minimal front-end client is included to facilitate testing and usability.
