@@ -9,7 +9,7 @@
     "debug": "node ./dist/app.js",
     "build": "npx tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "heroku-postbuild": "npm install && npm run build"
+    "build-heroku": "docker build -t booth-chat-api . && heroku container:push web -a booth-chat-api && heroku container:release web -a booth-chat-api"
   },
   "keywords": [],
   "author": "",
