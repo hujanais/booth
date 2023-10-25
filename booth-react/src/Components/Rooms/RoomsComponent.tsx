@@ -121,7 +121,7 @@ export const RoomsComponent = () => {
                     <IconButton disabled={isInRoom} onClick={() => joinRoom(row.id)} size="large">
                       <Chat />
                     </IconButton>
-                    <IconButton disabled={row.users.length === 0} onClick={() => deleteRoom(row.id)} size='large'>
+                    <IconButton disabled={row.users.length > 0} onClick={() => deleteRoom(row.id)} size='large'>
                       <DeleteForever />
                     </IconButton>
                   </TableCell>
