@@ -3,8 +3,6 @@ import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { Observable, Subject } from 'rxjs';
 import { RoomChangedModel, RoomUpdatedModel, ChangeType } from '../Models/ws-models';
 
-const wssUrl = 'http://localhost:3001'
-
 export class WssService {
     private socket: Socket<DefaultEventsMap, DefaultEventsMap> | undefined;
     private isConnected$: Subject<boolean> = new Subject<boolean>();
@@ -13,7 +11,7 @@ export class WssService {
     private roomUpdated$: Subject<RoomUpdatedModel> = new Subject<RoomUpdatedModel>();
     private newMessage$: Subject<RoomUpdatedModel> = new Subject<RoomUpdatedModel>();
 
-    public connect(url: string, jwtToken: string) {
+    public connect(wssUrl: string, jwtToken: string) {
         this.socket = io(`${wssUrl}?jwtToken=${jwtToken}`);
 
         this.socket.on("connect", () => {

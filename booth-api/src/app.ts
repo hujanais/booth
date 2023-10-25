@@ -18,15 +18,15 @@ const init = async (): Promise<boolean> => {
 }
 
 init().then((flag) => {
-  app.listen(port, () => {
+  const server = app.listen(port, () => {
     console.log(`server started on port ${port}`);
   });
   
-  const wssPort = 3001;
-  const wsApp = express();
-  const server = wsApp.listen(wssPort, () => {
-    console.log(`server started on port ${wssPort}`);
-  });
+  // const wssPort = 3001;
+  // const wsApp = express();
+  // const wsServer = wsApp.listen(wssPort, () => {
+  //   console.log(`server started on port ${wssPort}`);
+  // });
 
   // initialize the socket.io singleton class.  You are free to use anywhere now.
   const io = SocketIo.init(server);

@@ -9,11 +9,6 @@ npm install react-router-dom
 npm install rxjs
 ```
 
-### chart-js nightmare
-```
-npm install date-fns chartjs-adapter-date-fns --save
-```
-
 ### vercel deployment
 ```
 vercel --build-env SECRET=secret
