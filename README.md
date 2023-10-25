@@ -26,5 +26,3 @@ Build a Robust Multi-Tenant Node.js Server Application using modern web technolo
  2.	The React front-end is deployed on Vercel.
 
 You can find the react front-end demo site at [booth-react.vercel.app](https://booth-react.vercel.app/)
-
- 
