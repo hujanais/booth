@@ -20,7 +20,7 @@ Build a Robust Multi-Tenant Node.js Server Application using modern web technolo
  - Recover state from database on restart
  - Support users joining from multiple devices.
  ## Architecture
- ![Architecture-image](/booth-arch.png =320x160)
+ ![Architecture-image](./booth-arch.png =320x160)
  ## Demo/Deployment
  1.	The NodeJS application is deployed on Heroku using docker.  I used the same port for both http and websocket because I don't know how to set multiple ports for Heroku.
  2.	The React front-end is deployed on Vercel.
