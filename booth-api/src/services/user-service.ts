@@ -34,15 +34,21 @@ export class UserService {
         }
 
         const user = await dbFactory.getUserByName(payload.username);
-        if (!user || (user.password !== payload.password)) {
-            throw new Error(`${payload.username} is not found or invalid password`);
+        // remove this stringent test to allow guest access.
+        // if (!user || (user.password !== payload.password)) {
+        //     throw new Error(`${payload.username} is not found or invalid password`);
+        // }
+
+        const existingUser = dbFactory.sessions.find(s => s.user.username.toLowerCase() === payload.username.toLowerCase());
+        if (existingUser) {
+            throw new Error(`Sorry but ${payload.username} has already been taken`);
         }
 
         const newSession: Session = {
             sessionId: uuidv4(),
             user: {
-                id: user.id,
-                username: user.username
+                id: uuidv4(),
+                username: payload.username
             },
             socket: null,
             roomId: null
