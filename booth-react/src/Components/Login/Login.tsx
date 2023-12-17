@@ -1,13 +1,15 @@
-import { Box, Button, TextField } from "@mui/material";
+import { Box, Button, CircularProgress, TextField } from "@mui/material";
 import './Login.scss';
 import { useEffect, useState } from 'react';
 import { BoothApi } from '../../Services/Booth-Api';
+import { green } from "@mui/material/colors";
 
 export default function LoginComponent() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('Not Logged In')
     const [isConnected, setIsConnected] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const api = BoothApi.instance;
 
@@ -27,11 +29,14 @@ export default function LoginComponent() {
 
     const doLogin = async () => {
         try {
+            setLoading(true);
             await api.login({
                 username, password
             })
+            setLoading(false);
             setMessage(`Welcome ${username}`)
         } catch (err) {
+            setLoading(false);
             if (err instanceof Error) {
                 setMessage(err.message);
             }
@@ -44,6 +49,16 @@ export default function LoginComponent() {
                 <TextField id="outlined-basic" value={username} onChange={updateUsername} label="Username" variant="outlined" />
                 <TextField id="outlined-basic" value={password} onChange={updatePassword} label="Password" variant="outlined" />
                 <Button variant="outlined" onClick={doLogin}>Login</Button>
+                <div>
+                    {loading && (
+                        <CircularProgress
+                            size={24}
+                            sx={{
+                                color: green[500]
+                            }}
+                        />
+                    )}
+                </div>
                 <div>IsConnected: {isConnected}</div>
                 <div>{message}</div>
             </Box>
