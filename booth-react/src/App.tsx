@@ -1,7 +1,7 @@
 import './App.scss';
 
 import { ThemeProvider } from '@emotion/react';
-import { createTheme } from '@mui/material';
+import { Divider, createTheme } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import HeaderComponent from './Components/Header/Header';
 import LoginComponent from './Components/Login/Login';
@@ -22,10 +22,13 @@ function App() {
       <div className='app-container'>
         <HeaderComponent></HeaderComponent>
         <LoginComponent></LoginComponent>
+        <Divider/>
         <CreateRoomComponent></CreateRoomComponent>
+        <Divider/>
         <div className='div-rooms'>
         <RoomsComponent></RoomsComponent>
         </div>
+        <Divider/>
         <div className='div-room'>
           <RoomComponent></RoomComponent>
         </div>
